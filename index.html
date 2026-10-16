@@ -1098,11 +1098,11 @@
 
     <!-- Add New Habit Form -->
     <div class="add-habit-box">
-      <h3>➕ Add a Custom Goal</h3>
+      <h3>➕ Add a Habit</h3>
       <label class="field-label" for="newHabitName">Habit name</label>
       <input type="text" id="newHabitName" class="form-input" placeholder="e.g., Stretching" maxlength="90" />
-      <label class="field-label" for="newHabitTarget">Goal (optional)</label>
-      <input type="text" id="newHabitTarget" class="form-input" placeholder="e.g., 15 minutes" maxlength="90" />
+      <label class="field-label" for="newHabitTarget">Notes (optional)</label>
+      <input type="text" id="newHabitTarget" class="form-input" placeholder="e.g., 10 pages, no phone, stretch" maxlength="90" />
       <div class="form-row">
         <div><label class="field-label" for="newHabitCat">Category</label><select id="newHabitCat" class="form-select" onchange="toggleNewCategory()"></select></div>
         <div><label class="field-label" for="newHabitTime">Reminder time</label><input type="time" id="newHabitTime" class="form-input" value="08:00" /></div>
@@ -1833,7 +1833,7 @@
 
   function calendarRule(h){const r=h.schedule||{type:'daily'};const weekdays=['SU','MO','TU','WE','TH','FR','SA'];switch(r.type){case 'weekly':return 'FREQ=WEEKLY;BYDAY='+weekdays[r.weekday];case 'fortnightly':return 'FREQ=DAILY;INTERVAL=14';case 'monthly':return 'FREQ=MONTHLY;BYMONTHDAY='+r.day;case 'nth_weekday':return 'FREQ=MONTHLY;BYDAY='+r.ordinal+weekdays[r.weekday];case 'every_n_days':return 'FREQ=DAILY;INTERVAL='+r.interval;case 'weekly_target':return null;default:return 'FREQ=DAILY';}}
   function nextScheduledDate(h){try{const start=h.schedule?.anchor||TODAY_STR;const d=parseDateStr(start>TODAY_STR?start:TODAY_STR);for(let i=0;i<370;i++){const ds=makeDateStr(d.getFullYear(),d.getMonth()+1,d.getDate());if(isHabitDue(h,ds))return ds;d.setDate(d.getDate()+1);}return TODAY_STR;}catch(e){return TODAY_STR;}}
-  function buildGoogleCalendarUrl(habit){const [hh,mm]=(habit.reminderTime||'08:00').split(':').map(Number);const dur=Number(habit.durationMinutes)||20;const d=nextScheduledDate(habit).replace(/-/g,'');const st=String(hh).padStart(2,'0')+String(mm).padStart(2,'0');const endMin=hh*60+mm+dur;const et=String(Math.floor(endMin/60)%24).padStart(2,'0')+String(endMin%60).padStart(2,'0');const tz=getTimezone();const params=new URLSearchParams({action:'TEMPLATE',text:'Habit: '+habit.name,dates:d+'T'+st+'00/'+d+'T'+et+'00',ctz:tz,details:'Goal: '+habit.target+' | Category: '+habit.category+' | Duration: '+dur+' min'});const rule=calendarRule(habit);if(rule)params.set('recur','RRULE:'+rule);return 'https://calendar.google.com/calendar/render?'+params.toString();}
+  function buildGoogleCalendarUrl(habit){const [hh,mm]=(habit.reminderTime||'08:00').split(':').map(Number);const dur=Number(habit.durationMinutes)||20;const d=nextScheduledDate(habit).replace(/-/g,'');const st=String(hh).padStart(2,'0')+String(mm).padStart(2,'0');const endMin=hh*60+mm+dur;const et=String(Math.floor(endMin/60)%24).padStart(2,'0')+String(endMin%60).padStart(2,'0');const tz=getTimezone();const params=new URLSearchParams({action:'TEMPLATE',text:'Habit: '+habit.name,dates:d+'T'+st+'00/'+d+'T'+et+'00',ctz:tz,details:'Notes: '+habit.target+' | Category: '+habit.category+' | Duration: '+dur+' min'});const rule=calendarRule(habit);if(rule)params.set('recur','RRULE:'+rule);return 'https://calendar.google.com/calendar/render?'+params.toString();}
 
   // Render Header Quote & Top KPIs
   function renderHeaderAndQuote() {
@@ -1919,7 +1919,7 @@
                 <span class="cat-badge ${catClass}" style="${categoryBadgeStyle(h.category)}">${esc(h.category)}</span>
               </div>
               <div class="habit-sub-row">
-                <span>🎯 Goal: <strong>${esc(h.target)}</strong></span>
+                <span>📝 Notes: <strong>${esc(h.target)}</strong></span>
                 <span>📆 ${scheduleLabel(h)} ${!due?(isPausedOn(h,state.activeDate)?'• Paused':'• Not due today'):''}</span>
                 <span class="streak-pill">🔥 ${stats.currentStreak}${stats.streakUnit} streak (Best: ${stats.bestStreak}${stats.streakUnit})</span>
                 <span>📈 ${stats.rate}% in ${MONTHS[state.activeMonthIdx].label}</span>
@@ -1940,7 +1940,7 @@
           <div class="inline-edit-box" id="editbox-${h.id}">
             <div class="form-row">
               <input type="text" id="editname-${h.id}" class="form-input" value="${esc(h.name)}" placeholder="Habit name" />
-              <input type="text" id="edittarget-${h.id}" class="form-input" value="${esc(h.target)}" placeholder="Daily goal" />
+              <input type="text" id="edittarget-${h.id}" class="form-input" value="${esc(h.target)}" placeholder="Notes" />
             </div>
             <div class="form-row">
               <select id="editcat-${h.id}" class="form-select">
@@ -2405,7 +2405,7 @@
         `DTEND;TZID=${tz}:${nextScheduledDate(h).replace(/-/g,'')}T${endH}${endM}00`,
         ...(calendarRule(h)?['RRULE:'+calendarRule(h)]:[]),
         `SUMMARY:${h.icon} ${h.name} (${h.target})`,
-        `DESCRIPTION:Daily Habit Goal: ${h.target} (${h.category})`,
+        `DESCRIPTION:Notes: ${h.target} (${h.category})`,
         'BEGIN:VALARM',
         'TRIGGER:-PT10M',
         'ACTION:DISPLAY',
@@ -2450,7 +2450,7 @@
       'DTEND;TZID='+tz+':'+nextScheduledDate(h).replace(/-/g,'')+'T'+endH+endM+'00',
       ...(rule?['RRULE:'+rule]:[]),
       'SUMMARY:'+h.icon+' '+h.name,
-      'DESCRIPTION:Goal: '+h.target+' | Category: '+h.category+' | Duration: '+dur+' min',
+      'DESCRIPTION:Notes: '+h.target+' | Category: '+h.category+' | Duration: '+dur+' min',
       'BEGIN:VALARM','TRIGGER:-PT10M','ACTION:DISPLAY','DESCRIPTION:Reminder: '+h.name,'END:VALARM',
       'END:VEVENT','END:VCALENDAR'
     ].join('\r\n');
