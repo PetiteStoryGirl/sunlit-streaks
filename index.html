@@ -1106,6 +1106,7 @@
       <div class="form-row">
         <div><label class="field-label" for="newHabitCat">Category</label><select id="newHabitCat" class="form-select" onchange="toggleNewCategory()"></select></div>
         <div><label class="field-label" for="newHabitTime">Reminder time</label><input type="time" id="newHabitTime" class="form-input" value="08:00" /></div>
+        <div><label class="field-label" for="newHabitDuration">Duration (min)</label><input type="number" id="newHabitDuration" class="form-input" min="5" max="480" value="20" style="width:80px" /></div>
       </div>
       <input type="text" id="newCategoryName" class="form-input" placeholder="New category name" maxlength="45" style="display:none;margin-bottom:8px" />
       <label class="field-label" for="newHabitFrequency">Frequency</label>
@@ -1121,6 +1122,22 @@
         <div class="form-row"><button class="cal-remind-btn" onclick="exportBackup()">⬇️ Backup my data</button><button class="cal-remind-btn" onclick="document.getElementById('backupFile').click()">⬆️ Restore backup</button></div>
         <input type="file" id="backupFile" accept=".json,application/json" style="display:none" onchange="importBackup(event)">
         <button class="cal-remind-btn" onclick="toggleCategoryManager()" style="margin:8px 0">🎨 Manage categories</button><div id="categoryManager" style="display:none"></div>
+        <div style="margin:10px 0;font-size:.8rem;">
+          <label class="field-label">Timezone for calendar events</label>
+          <select id="timezoneSelect" class="form-select" onchange="setTimezone(this.value)" style="margin-top:4px;">
+            <option value="auto">Auto (detect device timezone)</option>
+            <option value="Australia/Brisbane">Australia/Brisbane</option>
+            <option value="Australia/Sydney">Australia/Sydney</option>
+            <option value="Australia/Melbourne">Australia/Melbourne</option>
+            <option value="America/New_York">America/New York</option>
+            <option value="America/Chicago">America/Chicago</option>
+            <option value="America/Denver">America/Denver</option>
+            <option value="America/Los_Angeles">America/Los Angeles</option>
+            <option value="Europe/London">Europe/London</option>
+            <option value="UTC">UTC</option>
+          </select>
+          <div id="tzDisplay" style="font-size:.7rem;color:var(--text-muted);margin-top:2px;"></div>
+        </div>
         <button class="cal-remind-btn" onclick="clearAllHabitsAndLogs()">🗑️ Delete all habits and check-ins</button>
       </details>
     </div>
@@ -1260,7 +1277,7 @@
     <span class="nav-ico">🔔</span>
     <span>Reminders</span>
   </button>
-  <button class="nav-tab" onclick="switchView('quotes', this)">
+  <button class="nav-tab" onclick="switchView('quotes', this)" style="display:none" aria-hidden="true">
     <span class="nav-ico">✨</span>
     <span>Quotes</span>
   </button>
@@ -1501,6 +1518,27 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {}
+  }
+
+  function getTimezone() {
+    if (state.timezone && state.timezone !== 'auto') return state.timezone;
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Australia/Brisbane'; }
+    catch (e) { return 'Australia/Brisbane'; }
+  }
+
+  function setTimezone(val) {
+    state.timezone = val || 'auto';
+    saveState();
+    updateTzDisplay();
+    showToast('Timezone: ' + (val === 'auto' ? 'auto-detect' : val));
+    renderAll();
+  }
+
+  function updateTzDisplay() {
+    const el = document.getElementById('tzDisplay');
+    if (el) el.textContent = 'Currently using: ' + getTimezone();
+    const sel = document.getElementById('timezoneSelect');
+    if (sel && state.timezone) sel.value = state.timezone;
   }
 
   function showToast(msg) {
@@ -1799,7 +1837,7 @@
 
   function calendarRule(h){const r=h.schedule||{type:'daily'};const weekdays=['SU','MO','TU','WE','TH','FR','SA'];switch(r.type){case 'weekly':return 'FREQ=WEEKLY;BYDAY='+weekdays[r.weekday];case 'fortnightly':return 'FREQ=DAILY;INTERVAL=14';case 'monthly':return 'FREQ=MONTHLY;BYMONTHDAY='+r.day;case 'nth_weekday':return 'FREQ=MONTHLY;BYDAY='+r.ordinal+weekdays[r.weekday];case 'every_n_days':return 'FREQ=DAILY;INTERVAL='+r.interval;case 'weekly_target':return null;default:return 'FREQ=DAILY';}}
   function nextScheduledDate(h){try{const start=h.schedule?.anchor||TODAY_STR;const d=parseDateStr(start>TODAY_STR?start:TODAY_STR);for(let i=0;i<370;i++){const ds=makeDateStr(d.getFullYear(),d.getMonth()+1,d.getDate());if(isHabitDue(h,ds))return ds;d.setDate(d.getDate()+1);}return TODAY_STR;}catch(e){return TODAY_STR;}}
-  function buildGoogleCalendarUrl(habit){const [hh,mm]=(habit.reminderTime||'08:00').split(':').map(Number);const d=nextScheduledDate(habit).replace(/-/g,'');const st=String(hh).padStart(2,'0')+String(mm).padStart(2,'0');const end=new Date(2026,0,1,hh,mm+20);const et=String(end.getHours()).padStart(2,'0')+String(end.getMinutes()).padStart(2,'0');const params=new URLSearchParams({action:'TEMPLATE',text:'Habit: '+habit.name,dates:d+'T'+st+'00/'+d+'T'+et+'00',ctz:'Australia/Brisbane',details:'Goal: '+habit.target+' | Category: '+habit.category});const rule=calendarRule(habit);if(rule)params.set('recur','RRULE:'+rule);return 'https://calendar.google.com/calendar/render?'+params.toString();}
+  function buildGoogleCalendarUrl(habit){const [hh,mm]=(habit.reminderTime||'08:00').split(':').map(Number);const dur=Number(habit.durationMinutes)||20;const d=nextScheduledDate(habit).replace(/-/g,'');const st=String(hh).padStart(2,'0')+String(mm).padStart(2,'0');const endMin=hh*60+mm+dur;const et=String(Math.floor(endMin/60)%24).padStart(2,'0')+String(endMin%60).padStart(2,'0');const tz=getTimezone();const params=new URLSearchParams({action:'TEMPLATE',text:'Habit: '+habit.name,dates:d+'T'+st+'00/'+d+'T'+et+'00',ctz:tz,details:'Goal: '+habit.target+' | Category: '+habit.category+' | Duration: '+dur+' min'});const rule=calendarRule(habit);if(rule)params.set('recur','RRULE:'+rule);return 'https://calendar.google.com/calendar/render?'+params.toString();}
 
   // Render Header Quote & Top KPIs
   function renderHeaderAndQuote() {
@@ -1913,6 +1951,7 @@
                 ${categoryOptions(h.category)}
               </select>
               <input type="time" id="edittime-${h.id}" class="form-input" value="${h.reminderTime || '08:00'}" />
+              <input type="number" id="editdur-${h.id}" class="form-input" min="5" max="480" value="${h.durationMinutes || 20}" title="Duration minutes" style="width:70px" />
             </div>
             <label class="field-label">Frequency</label>
             <select id="edit-${h.id}-newHabitFrequency" class="form-select" onchange="renderFrequencyOptions('edit-${h.id}-')">
@@ -1960,6 +1999,8 @@
     if (targetEl && targetEl.value.trim()) h.target = targetEl.value.trim();
     if (catEl && catEl.value) h.category = catEl.value;
     if (timeEl && timeEl.value) h.reminderTime = timeEl.value;
+    const durEl = document.getElementById('editdur-' + habitId);
+    if (durEl && durEl.value) h.durationMinutes = Math.max(5, Math.min(480, Number(durEl.value) || 20));
     let schedule;
     try { schedule=selectedSchedule('edit-'+habitId+'-'); }
     catch(e) { showToast(e.message); return; }
@@ -1993,6 +2034,7 @@
         target: String(h.target || 'Daily completion').trim().slice(0, 90),
         icon: h.icon || '✨',
         reminderTime: /^\d{2}:\d{2}$/.test(h.reminderTime) ? h.reminderTime : '08:00',
+        durationMinutes: Math.max(5, Math.min(480, Number(h.durationMinutes) || 20)),
         schedule: (h.schedule && typeof h.schedule === 'object' && h.schedule.type) ? h.schedule : {type: 'daily'},
         paused: !!h.paused,
         pauseRanges: Array.isArray(h.pauseRanges) ? h.pauseRanges : []
@@ -2077,6 +2119,8 @@
     if(!state.categories)state.categories=[];
     if(!state.categories.includes(category))state.categories.push(category);
     const reminderTime = timeEl.value || '08:00';
+    const durationEl = document.getElementById('newHabitDuration');
+    const durationMinutes = Math.max(5, Math.min(480, Number(durationEl && durationEl.value) || 20));
 
     state.habits.push({
       id: 'h_' + Date.now(),
@@ -2085,6 +2129,7 @@
       target,
       icon: category === 'Health' ? '🌿' : (category === 'Personal Growth' ? '🚀' : '🌸'),
       reminderTime,
+      durationMinutes,
       schedule
     });
     nameEl.value = '';
@@ -2328,7 +2373,7 @@
                    onchange="updateReminderTime('${h.id}', this.value)" />
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span style="font-size:0.72rem;color:var(--text-muted);font-weight:600;">${scheduleLabel(h)} • Brisbane time</span>
+            <span style="font-size:0.72rem;color:var(--text-muted);font-weight:600;">${scheduleLabel(h)} • ${getTimezone()}</span>
             ${calendarRule(h)?`<a href="${gcalUrl}" target="_blank" rel="noopener" class="gcal-action-link">📅 Add Google Calendar Reminder ↗</a>`:`<span class="cal-remind-btn">Set flexible weekly reminder manually in Calendar</span>`}
           </div>
         </div>
@@ -2338,19 +2383,21 @@
 
   // Generate & Download .ICS Calendar File with VALARM reminders starting Oct 7, 2026
   function downloadAllRemindersICS() {
+    const tz = getTimezone();
     let icsLines = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
       'PRODID:-//Sunlit Streaks Habit Tracker//EN',
       'CALSCALE:GREGORIAN',
-      'X-WR-TIMEZONE:Australia/Brisbane'
+      'X-WR-TIMEZONE:' + tz
     ];
 
     state.habits.filter(h=>!h.paused&&h.schedule?.type!=='weekly_target').forEach(h => {
       const [hh, mm] = (h.reminderTime || '08:00').split(':').map(Number);
+      const dur = Number(h.durationMinutes) || 20;
       const startH = String(hh).padStart(2, '0');
       const startM = String(mm).padStart(2, '0');
-      let endMin = hh * 60 + mm + 20;
+      let endMin = hh * 60 + mm + dur;
       const endH = String(Math.floor(endMin / 60) % 24).padStart(2, '0');
       const endM = String(endMin % 60).padStart(2, '0');
 
@@ -2358,8 +2405,8 @@
         'BEGIN:VEVENT',
         `UID:${h.id}-oct2026@sunlitstreaks.local`,
         'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'').replace('Z','Z'),
-        `DTSTART;TZID=Australia/Brisbane:${nextScheduledDate(h).replace(/-/g,'')}T${startH}${startM}00`,
-        `DTEND;TZID=Australia/Brisbane:${nextScheduledDate(h).replace(/-/g,'')}T${endH}${endM}00`,
+        `DTSTART;TZID=${tz}:${nextScheduledDate(h).replace(/-/g,'')}T${startH}${startM}00`,
+        `DTEND;TZID=${tz}:${nextScheduledDate(h).replace(/-/g,'')}T${endH}${endM}00`,
         ...(calendarRule(h)?['RRULE:'+calendarRule(h)]:[]),
         `SUMMARY:${h.icon} ${h.name} (${h.target})`,
         `DESCRIPTION:Daily Habit Goal: ${h.target} (${h.category})`,
@@ -2529,12 +2576,14 @@
   // Initialize App
   ensureMonthsThrough(TODAY_STR);
   loadState();
+  if (!state.timezone) state.timezone = 'auto';
   ensureMonthsThrough(state.activeDate || TODAY_STR);
   state.activeMonthIdx = Math.max(0,MONTHS.findIndex(m=>m.key===(state.activeDate||TODAY_STR).slice(0,7)));
   applyMonthTheme();
   refreshCategorySelect();
   renderFrequencyOptions();
   renderAll();
+  updateTzDisplay();
   if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.warn));
 </script>
 </body>
