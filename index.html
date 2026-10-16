@@ -1212,13 +1212,13 @@
   <!-- TAB 4: GOOGLE CALENDAR REMINDERS INTEGRATION -->
   <section id="view-reminders" class="view-panel">
     <div class="chart-card" style="background:var(--month-bg);border-color:var(--month-card-tint);">
-      <div class="chart-title">📅 Google Calendar Habit Reminders</div>
+      <div class="chart-title">📅 Calendar Reminders</div>
       <div class="chart-subtitle" style="margin-top:4px;color:var(--text-main);">
-        Set reminder times and add repeating events to Google Calendar. Flexible weekly targets require manual Calendar setup. Reminders are delivered by Google Calendar, not this app.
+        Add your habits to any calendar — Google, Outlook, iPhone Calendar, or others. Download the .ics file (works everywhere) or use the Google Calendar shortcut. Reminders are delivered by your calendar app, not this app.
       </div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
         <button class="primary-btn" style="flex:1;" onclick="downloadAllRemindersICS()">
-          📥 Download All Reminders (.ICS)
+          📥 Download calendar file (.ics) — works with iPhone, Outlook, Google & more
         </button>
         <button class="cal-remind-btn" style="padding:10px 14px;" onclick="requestBrowserNotifications()">
           🔔 How reminders work
@@ -1230,8 +1230,8 @@
 
     <!-- Custom Google Calendar Event Builder -->
     <div class="chart-card" style="margin-top:14px;">
-      <div class="chart-title">⚡ Custom Google Calendar Reminder Builder</div>
-      <div class="chart-subtitle" style="margin-bottom:10px;">Create a custom one-off or recurring Google Calendar reminder for any goal</div>
+      <div class="chart-title">⚡ Custom Reminder Builder</div>
+      <div class="chart-subtitle" style="margin-bottom:10px;">Create a custom reminder and add it to your calendar</div>
       <div class="form-row">
         <input type="text" id="customCalTitle" class="form-input" placeholder="Reminder title (e.g., Evening Stretch)" value="Weekly Streak Review & Goal Check-In" />
         <input type="time" id="customCalTime" class="form-input" value="09:00" />
@@ -1243,7 +1243,7 @@
           <option value="ONCE">One-Time Event</option>
         </select>
         <button class="cal-remind-btn" style="justify-content:center;" onclick="openCustomCalendarReminder()">
-          📅 Create in Google Calendar ↗
+          📅 Add to Google Calendar ↗
         </button>
       </div>
     </div>
@@ -1934,7 +1934,7 @@
             <div class="habit-card-actions">
               <button class="mini-action-btn" onclick="toggleEditHabit('${h.id}')" title="Edit habit">✏️ Edit</button>
               <button class="mini-action-btn" onclick="moveHabit('${h.id}',-1)" title="Move up">↑</button><button class="mini-action-btn" onclick="moveHabit('${h.id}',1)" title="Move down">↓</button><button class="mini-action-btn" onclick="togglePauseHabit('${h.id}')">${h.paused?'▶ Resume':'⏸ Pause'}</button><button class="mini-action-btn" onclick="deleteHabit('${h.id}')" title="Delete habit">🗑️</button>
-              ${(h.schedule?.type!=='weekly_target') ? `<a href="${gcalUrl}" target="_blank" rel="noopener" class="cal-remind-btn">📅 Remind (${h.reminderTime})</a>` : `<span class="cal-remind-btn" title="Create a matching repeating event manually in Google Calendar">📅 Calendar: set manually</span>`}
+              ${(h.schedule?.type!=='weekly_target') ? `<span style="display:inline-flex;gap:4px;flex-wrap:wrap;"><a href="${gcalUrl}" target="_blank" rel="noopener" class="cal-remind-btn">📅 Google</a><button class="cal-remind-btn" onclick="downloadHabitICS('${h.id}')">📥 .ics</button></span>` : `<span class="cal-remind-btn" title="Create a matching repeating event manually">📅 Set manually</span>`}
             </div>
           </div>
           <div class="inline-edit-box" id="editbox-${h.id}">
@@ -2370,7 +2370,7 @@
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
             <span style="font-size:0.72rem;color:var(--text-muted);font-weight:600;">${scheduleLabel(h)} • ${getTimezone()}</span>
-            ${calendarRule(h)?`<a href="${gcalUrl}" target="_blank" rel="noopener" class="gcal-action-link">📅 Add Google Calendar Reminder ↗</a>`:`<span class="cal-remind-btn">Set flexible weekly reminder manually in Calendar</span>`}
+            ${calendarRule(h)?`<span style="display:flex;gap:6px;flex-wrap:wrap;"><a href="${gcalUrl}" target="_blank" rel="noopener" class="gcal-action-link">📅 Google Calendar</a><button class="cal-remind-btn" onclick="downloadHabitICS('${h.id}')">📥 Other calendars (.ics)</button></span>`:`<span class="cal-remind-btn">Set flexible weekly reminder manually</span>`}
           </div>
         </div>
       `;
@@ -2426,6 +2426,44 @@
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast('📥 Downloaded Google Calendar .ICS pack!');
+  }
+
+  
+  function downloadHabitICS(habitId) {
+    const h = state.habits.find(x => x.id === habitId);
+    if (!h) return;
+    const tz = getTimezone();
+    const [hh, mm] = (h.reminderTime || '08:00').split(':').map(Number);
+    const dur = Number(h.durationMinutes) || 20;
+    const startH = String(hh).padStart(2, '0');
+    const startM = String(mm).padStart(2, '0');
+    let endMin = hh * 60 + mm + dur;
+    const endH = String(Math.floor(endMin / 60) % 24).padStart(2, '0');
+    const endM = String(endMin % 60).padStart(2, '0');
+    const rule = calendarRule(h);
+    const ics = [
+      'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Sunlit Streaks//EN','CALSCALE:GREGORIAN','X-WR-TIMEZONE:'+tz,
+      'BEGIN:VEVENT',
+      'UID:'+h.id+'@sunlitstreaks.local',
+      'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'').replace('Z','Z'),
+      'DTSTART;TZID='+tz+':'+nextScheduledDate(h).replace(/-/g,'')+'T'+startH+startM+'00',
+      'DTEND;TZID='+tz+':'+nextScheduledDate(h).replace(/-/g,'')+'T'+endH+endM+'00',
+      ...(rule?['RRULE:'+rule]:[]),
+      'SUMMARY:'+h.icon+' '+h.name,
+      'DESCRIPTION:Goal: '+h.target+' | Category: '+h.category+' | Duration: '+dur+' min',
+      'BEGIN:VALARM','TRIGGER:-PT10M','ACTION:DISPLAY','DESCRIPTION:Reminder: '+h.name,'END:VALARM',
+      'END:VEVENT','END:VCALENDAR'
+    ].join('\r\n');
+    const blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (h.name||'habit').replace(/[^a-z0-9]/gi,'-').toLowerCase()+'.ics';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Downloaded .ics — open it to add to your calendar');
   }
 
   function requestBrowserNotifications(){alert('For reliable phone alerts, use the Google Calendar reminder links or download the calendar file. Sunlit Streaks cannot send scheduled background notifications by itself.');}
