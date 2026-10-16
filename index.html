@@ -655,7 +655,12 @@
       display: block;
     }
 
-    /* Add Habit Form Card */
+    .field-label { display:block;font-size:.75rem;font-weight:800;color:var(--text-muted);margin:10px 0 5px; }
+  .add-habit-box > .form-input { margin-bottom:2px; }
+  .manage-habits { margin-top:15px;border-top:1px solid #e2e8f0;padding-top:12px;font-size:.8rem; }
+  .manage-habits summary { cursor:pointer;font-weight:800;color:#475569; }
+  .habit-card.not-due { opacity:.73; }
+  /* Add Habit Form Card */
     .add-habit-box {
       background: #FFFFFF;
       border: 1.5px dashed #CBD5E1;
@@ -1025,9 +1030,6 @@
         <button class="icon-pill-btn" onclick="toggleDemoData()" id="demoBtn" style="display:none" title="Toggle sample streak data to preview charts">
           ✨ Demo Streaks
         </button>
-        <button class="icon-pill-btn" onclick="toggleWideMode()" id="layoutBtn" title="Switch mobile/expanded layout">
-          📱 View
-        </button>
       </div>
     </div>
 
@@ -1069,7 +1071,7 @@
   <!-- COLOR-CODED MONTH BAR -->
   <div class="section-block">
     <div class="section-label-row">
-      <span class="section-title">🎨 Color-Coded Months (Oct 7, 2026 – Sep 2027)</span>
+      <span class="section-title">Choose month</span>
       <span style="font-size:0.72rem;font-weight:700;color:var(--month-text-accent);" id="activeMonthBadge">Oct 2026 (Starts Oct 7)</span>
     </div>
     <div class="month-pills-scroll" id="monthPillsContainer"></div>
@@ -1096,28 +1098,31 @@
 
     <!-- Add New Habit Form -->
     <div class="add-habit-box">
-      <h3>➕ Add a Custom Daily Goal</h3>
+      <h3>➕ Add a Custom Goal</h3>
+      <label class="field-label" for="newHabitName">Habit name</label>
+      <input type="text" id="newHabitName" class="form-input" placeholder="e.g., Stretching" maxlength="90" />
+      <label class="field-label" for="newHabitTarget">Goal (optional)</label>
+      <input type="text" id="newHabitTarget" class="form-input" placeholder="e.g., 15 minutes" maxlength="90" />
       <div class="form-row">
-        <input type="text" id="newHabitName" class="form-input" placeholder="Habit name (e.g., Stretching)" />
-        <input type="text" id="newHabitTarget" class="form-input" placeholder="Daily goal (e.g., 15 mins)" />
+        <div><label class="field-label" for="newHabitCat">Category</label><select id="newHabitCat" class="form-select" onchange="toggleNewCategory()"></select></div>
+        <div><label class="field-label" for="newHabitTime">Reminder time</label><input type="time" id="newHabitTime" class="form-input" value="08:00" /></div>
       </div>
-      <div class="form-row">
-        <select id="newHabitCat" class="form-select">
-          <option value="Health">Health</option>
-          <option value="Personal Growth">Personal Growth</option>
-          <option value="Well-being">Well-being</option>
-        </select>
-        <input type="time" id="newHabitTime" class="form-input" value="08:00" />
-      </div>
-      <button class="primary-btn" onclick="addNewHabit()">Add Habit & Reminder</button>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-        <button class="cal-remind-btn" style="flex:1;justify-content:center;" onclick="clearAllLogsOnly()">
-          🧹 Clear Sample Check-Ins (Keep Habits)
-        </button>
-        <button class="cal-remind-btn" style="flex:1;justify-content:center;" onclick="clearAllHabitsAndLogs()">
-          ✨ Start Blank (Remove All Default Habits)
-        </button>
-      </div>
+      <input type="text" id="newCategoryName" class="form-input" placeholder="New category name" maxlength="45" style="display:none;margin-bottom:8px" />
+      <label class="field-label" for="newHabitFrequency">Frequency</label>
+      <select id="newHabitFrequency" class="form-select" onchange="renderFrequencyOptions()">
+        <option value="daily">Daily habit</option><option value="weekly">Weekly habit</option>
+        <option value="fortnightly">Fortnightly habit</option><option value="monthly">Monthly habit</option>
+        <option value="weekly_target">X times per week</option><option value="every_n_days">Every X days</option><option value="nth_weekday">Every Nth weekday of the month</option>
+      </select>
+      <div id="frequencyOptions" style="margin-top:8px"></div>
+      <button class="primary-btn" onclick="addNewHabit()" style="margin-top:12px">Add Habit</button>
+      <details class="manage-habits"><summary>⚙️ Manage habits</summary>
+        <p style="font-size:.75rem;color:var(--text-muted);margin:10px 0">Edit, pause, reorder or delete habits from their cards below.</p>
+        <div class="form-row"><button class="cal-remind-btn" onclick="exportBackup()">⬇️ Backup my data</button><button class="cal-remind-btn" onclick="document.getElementById('backupFile').click()">⬆️ Restore backup</button></div>
+        <input type="file" id="backupFile" accept=".json,application/json" style="display:none" onchange="importBackup(event)">
+        <button class="cal-remind-btn" onclick="toggleCategoryManager()" style="margin:8px 0">🎨 Manage categories</button><div id="categoryManager" style="display:none"></div>
+        <button class="cal-remind-btn" onclick="clearAllHabitsAndLogs()">🗑️ Delete all habits and check-ins</button>
+      </details>
     </div>
   </main>
 
@@ -1192,14 +1197,14 @@
     <div class="chart-card" style="background:var(--month-bg);border-color:var(--month-card-tint);">
       <div class="chart-title">📅 Google Calendar Habit Reminders</div>
       <div class="chart-subtitle" style="margin-top:4px;color:var(--text-main);">
-        Set your preferred daily reminder time (Australia/Brisbane AEST) for each habit. Tap <strong>Add Daily Reminder</strong> to open a pre-filled recurring Google Calendar event starting Oct 7, 2026, or download a combined <code>.ics</code> reminder file.
+        Set reminder times and add repeating events to Google Calendar. Flexible weekly targets require manual Calendar setup. Reminders are delivered by Google Calendar, not this app.
       </div>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
         <button class="primary-btn" style="flex:1;" onclick="downloadAllRemindersICS()">
           📥 Download All Reminders (.ICS)
         </button>
         <button class="cal-remind-btn" style="padding:10px 14px;" onclick="requestBrowserNotifications()">
-          🔔 Enable In-App Alerts
+          🔔 How reminders work
         </button>
       </div>
     </div>
@@ -1338,6 +1343,22 @@
     }
   ];
 
+  // Extend the original colour cycle indefinitely, in manageable year-sized batches.
+  const MONTH_THEMES = MONTHS.map(m => ({primary:m.primary,secondary:m.secondary,bg:m.bg,tint:m.tint,accentText:m.accentText,themeName:m.themeName}));
+  function ensureMonthsThrough(dateStr) {
+    while (MONTHS[MONTHS.length-1].key < dateStr.slice(0,7)) {
+      const last=MONTHS[MONTHS.length-1];
+      const next=new Date(last.year,last.month,1);
+      const year=next.getFullYear(),month=next.getMonth()+1;
+      const theme=MONTH_THEMES[MONTHS.length%MONTH_THEMES.length];
+      MONTHS.push({key:makeDateStr(year,month,1).slice(0,7),label:next.toLocaleDateString('en-AU',{month:'short',year:'2-digit'}),fullName:next.toLocaleDateString('en-AU',{month:'long',year:'numeric'}),year,month,startDay:1,endDay:new Date(year,month,0).getDate(),...theme});
+    }
+  }
+  function extendMonthNavigation() {
+    const last=MONTHS[MONTHS.length-1];
+    ensureMonthsThrough(makeDateStr(last.year+1,last.month,1));
+  }
+
   // Original standalone habits designed for Sunlit Streaks
   const INITIAL_HABITS = [
     {
@@ -1438,7 +1459,7 @@
   ];
 
   const STORAGE_KEY = 'sunlit_streaks_personal_pwa_v1';
-  const TODAY_STR = (() => { const now = new Date(); const today = makeDateStr(now.getFullYear(), now.getMonth()+1, now.getDate()); return today < '2026-10-07' ? '2026-10-07' : (today > '2027-09-30' ? '2027-09-30' : today); })();
+  const TODAY_STR = (() => { const now = new Date(); const today = makeDateStr(now.getFullYear(), now.getMonth()+1, now.getDate()); return today < '2026-10-07' ? '2026-10-07' : today; })();
 
   const DEFAULT_LOGS = {
     '2026-10-07': { 'h_acv': true, 'h_hydration': true, 'h_tablets': true, 'h_exercise': true, 'h_meditation': true, 'h_reading': true },
@@ -1544,6 +1565,7 @@
 
   // Render Month Switcher Pills
   function renderMonthPills() {
+    if (state.activeMonthIdx >= MONTHS.length-2) extendMonthNavigation();
     const container = document.getElementById('monthPillsContainer');
     container.innerHTML = MONTHS.map((m, idx) => {
       const isActive = idx === state.activeMonthIdx;
@@ -1561,10 +1583,11 @@
 
   function selectMonth(idx) {
     state.activeMonthIdx = idx;
+    if (idx >= MONTHS.length-2) extendMonthNavigation();
     const m = MONTHS[idx];
     // If activeDate is not in this month, jump to startDay (or Today if Oct 2026)
     if (!state.activeDate.startsWith(m.key)) {
-      state.activeDate = (m.key === '2026-10') ? TODAY_STR : makeDateStr(m.year, m.month, m.startDay);
+      state.activeDate = makeDateStr(m.year, m.month, m.startDay);
     }
     state.activeWeekIdx = 0;
     applyMonthTheme();
@@ -1576,12 +1599,12 @@
     const curr = parseDateStr(state.activeDate);
     curr.setDate(curr.getDate() + delta);
     const minDate = new Date(2026, 9, 7);
-    const maxDate = new Date(2027, 8, 30);
-    if (curr < minDate || curr > maxDate) return;
+    if (curr < minDate) return;
 
     const newStr = makeDateStr(curr.getFullYear(), curr.getMonth() + 1, curr.getDate());
     state.activeDate = newStr;
     const mKey = newStr.slice(0, 7);
+    ensureMonthsThrough(newStr);
     const mIdx = MONTHS.findIndex(m => m.key === mKey);
     if (mIdx !== -1 && mIdx !== state.activeMonthIdx) {
       state.activeMonthIdx = mIdx;
@@ -1604,7 +1627,8 @@
       const isSelected = dStr === state.activeDate;
       const isToday = dStr === TODAY_STR;
       const doneCount = getCompletedCountForDate(dStr);
-      const pct = state.habits.length ? Math.round((doneCount / state.habits.length) * 100) : 0;
+      const dueCount=dueHabits(dStr).length;
+      const pct = dueCount ? Math.round((doneCount / dueCount) * 100) : 0;
 
       html += `
         <div class="day-chip ${isSelected ? 'active' : ''} ${isToday ? 'is-today' : ''}"
@@ -1626,12 +1650,75 @@
     renderAll();
   }
 
+  const BASE_CATEGORIES = ['Health','Personal Growth','Well-being'];
+  function esc(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function categoryOptions(selected) {
+    const cats = [...new Set([...BASE_CATEGORIES,...(state.categories || []),...state.habits.map(h=>h.category)])];
+    return cats.map(c=>`<option value="${esc(c)}" ${c===selected?'selected':''}>${esc(c)}</option>`).join('');
+  }
+  function refreshCategorySelect() {
+    const el=document.getElementById('newHabitCat'); if (!el) return;
+    const old=el.value; el.innerHTML=categoryOptions(old)+'<option value="__new__">+ Add new category...</option>';
+    if (old && [...el.options].some(o=>o.value===old)) el.value=old;
+  }
+  function toggleNewCategory() { document.getElementById('newCategoryName').style.display=document.getElementById('newHabitCat').value==='__new__'?'block':'none'; }
+  function renderFrequencyOptions(prefix='') {
+    const mode=document.getElementById(prefix+'newHabitFrequency').value;
+    const options=document.getElementById(prefix+'frequencyOptions');
+    const weekday='<option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option>';
+    const anchor='<label class="field-label">First scheduled date</label><input id="'+prefix+'freqAnchor" class="form-input" type="date" value="'+TODAY_STR+'" min="2026-10-07" >';
+    if(mode==='daily') options.innerHTML='';
+    else if(mode==='weekly') options.innerHTML='<label class="field-label">Day of the week</label><select id="'+prefix+'freqWeekday" class="form-select">'+weekday+'</select>';
+    else if(mode==='fortnightly') options.innerHTML=anchor;
+    else if(mode==='monthly') options.innerHTML='<label class="field-label">Day of the month (1–31)</label><input id="'+prefix+'freqMonthDay" class="form-input" type="number" min="1" max="31" value="1">';
+    else if(mode==='weekly_target') options.innerHTML='<label class="field-label">Times per week (1–7)</label><input id="'+prefix+'freqWeeklyTarget" class="form-input" type="number" min="1" max="7" value="3">';
+    else if(mode==='every_n_days') options.innerHTML='<label class="field-label">Repeat every how many days?</label><input id="'+prefix+'freqInterval" class="form-input" type="number" min="2" max="365" value="3">'+anchor;
+    else options.innerHTML='<div class="form-row"><div><label class="field-label">Occurrence</label><select id="'+prefix+'freqOrdinal" class="form-select"><option value="1">First</option><option value="2">Second</option><option value="3" selected>Third</option><option value="4">Fourth</option><option value="-1">Last</option></select></div><div><label class="field-label">Weekday</label><select id="'+prefix+'freqWeekday" class="form-select">'+weekday+'</select></div></div>';
+    const wd=document.getElementById(prefix+'freqWeekday');if(wd)wd.value=String(parseDateStr(TODAY_STR).getDay());
+  }
+  function selectedSchedule(prefix='') {
+    const type=document.getElementById(prefix+'newHabitFrequency').value;
+    const val=id=>document.getElementById(prefix+id)?.value;
+    const obj={type};
+    if(type==='weekly'||type==='nth_weekday')obj.weekday=Number(val('freqWeekday'));
+    if(type==='fortnightly'||type==='every_n_days')obj.anchor=val('freqAnchor')||TODAY_STR;
+    if(type==='every_n_days')obj.interval=Number(val('freqInterval'));
+    if(type==='weekly_target')obj.count=Number(val('freqWeeklyTarget'));
+    if(type==='monthly')obj.day=Number(val('freqMonthDay'));
+    if(type==='nth_weekday')obj.ordinal=Number(val('freqOrdinal'));
+    if((type==='weekly_target'&&(!Number.isInteger(obj.count)||obj.count<1||obj.count>7))||(type==='every_n_days'&&(!Number.isInteger(obj.interval)||obj.interval<2||obj.interval>365))||(type==='monthly'&&(!Number.isInteger(obj.day)||obj.day<1||obj.day>31)))throw new Error('Please enter a valid frequency.');
+    return obj;
+  }
+  function isHabitDue(h,dateStr) {
+    const r=h.schedule||{type:'daily'};const dt=parseDateStr(dateStr);const wd=dt.getDay();
+    if(r.type==='daily'||r.type==='weekly_target')return true;
+    if(r.type==='weekly')return wd===r.weekday;
+    if(r.type==='monthly')return dt.getDate()===r.day;
+    if(r.type==='nth_weekday') {
+      if(wd!==r.weekday)return false;
+      if(r.ordinal===-1){const next=new Date(dt);next.setDate(next.getDate()+7);return next.getMonth()!==dt.getMonth();}
+      return Math.ceil(dt.getDate()/7)===r.ordinal;
+    }
+    if(r.type==='fortnightly'||r.type==='every_n_days') {
+      const diff=Math.round((Date.UTC(dt.getFullYear(),dt.getMonth(),dt.getDate())-Date.UTC(...r.anchor.split('-').map((v,i)=>i===1?Number(v)-1:Number(v))))/86400000);
+      return diff>=0&&diff%(r.type==='fortnightly'?14:r.interval)===0;
+    }
+    return true;
+  }
+  function dueHabits(dateStr){return state.habits.filter(h=>!isPausedOn(h,dateStr)&&isHabitDue(h,dateStr));}
+  function isPausedOn(h,ds){return !!h.paused || !!(h.pauseRanges||[]).some(r=>ds>=r.from&&ds<=r.to);}
+  function isoWeekStart(ds){const d=parseDateStr(ds);const wd=(d.getDay()+6)%7;d.setDate(d.getDate()-wd);return makeDateStr(d.getFullYear(),d.getMonth()+1,d.getDate());}
+  function weeklyCount(h,ds){const start=isoWeekStart(ds);const end=parseDateStr(start);end.setDate(end.getDate()+6);let count=0;for(let d=parseDateStr(start);d<=end;d.setDate(d.getDate()+1)){const day=makeDateStr(d.getFullYear(),d.getMonth()+1,d.getDate());if(state.logs[day]?.[h.id])count++;}return count;}
+  function scheduleLabel(h){const r=h.schedule||{type:'daily'};return ({daily:'Daily',weekly:'Weekly',fortnightly:'Fortnightly',monthly:'Monthly',weekly_target:(r.count||3)+' times/week',every_n_days:'Every '+r.interval+' days',nth_weekday:'Monthly custom'})[r.type]||'Daily';}
+  function dueDatesInMonth(h,monthIdx){const m=MONTHS[monthIdx],out=[];for(let d=m.startDay;d<=m.endDay;d++){const ds=makeDateStr(m.year,m.month,d);if(isHabitDue(h,ds))out.push(ds);}return out;}
   // Logging & Streak Calculations
   function isHabitDone(habitId, dateStr) {
     return !!(state.logs[dateStr] && state.logs[dateStr][habitId]);
   }
 
   function toggleHabit(habitId, dateStr) {
+    const habit=state.habits.find(h=>h.id===habitId);
+    if (habit && (isPausedOn(habit,dateStr)||!isHabitDue(habit,dateStr))) { showToast("This habit is not scheduled for that day."); return; }
     if (!state.logs[dateStr]) state.logs[dateStr] = {};
     state.logs[dateStr][habitId] = !state.logs[dateStr][habitId];
     saveState();
@@ -1643,97 +1730,76 @@
 
   function getCompletedCountForDate(dateStr) {
     const dayLog = state.logs[dateStr] || {};
-    return state.habits.reduce((acc, h) => acc + (dayLog[h.id] ? 1 : 0), 0);
+    return dueHabits(dateStr).reduce((acc, h) => acc + (dayLog[h.id] ? 1 : 0), 0);
   }
 
+  // Weekly targets are assessed as whole Monday-Sunday weeks. A current, unfinished
+  // week never breaks a streak; paused weeks are excluded from the denominator.
+  function weeklyTargetWeekStats(h, week, asOf=TODAY_STR) {
+    const start=parseDateStr(week), target=Math.max(1,Math.min(7,Number(h.schedule?.count)||3));
+    let eligible=0,completed=0,elapsed=0;
+    for(let i=0;i<7;i++) {
+      const ds=makeDateStr(start.getFullYear(),start.getMonth()+1,start.getDate());
+      if(ds>='2026-10-07'&&!isPausedOn(h,ds)) {
+        eligible++;
+        if(ds<=asOf)elapsed++;
+        if(ds<=asOf&&isHabitDone(h.id,ds))completed++;
+      }
+      start.setDate(start.getDate()+1);
+    }
+    const required=Math.min(target,eligible);
+    const end=parseDateStr(week);end.setDate(end.getDate()+6);
+    const endStr=makeDateStr(end.getFullYear(),end.getMonth()+1,end.getDate());
+    return {required,completed:Math.min(completed,required),success:required>0&&completed>=required,finished:endStr<asOf,eligible,elapsed};
+  }
+  function weeklyTargetMonthStats(h,monthIdx) {
+    const m=MONTHS[monthIdx],dates=dueDatesInMonth(h,monthIdx).filter(ds=>!isPausedOn(h,ds)&&ds<=TODAY_STR);
+    const weeks=[...new Set(dates.map(isoWeekStart))];
+    let totalDone=0,totalDays=0;
+    for(const week of weeks) {
+      const st=weeklyTargetWeekStats(h,week);
+      // A weekly goal belongs to the month in which its Monday falls;
+      // avoids counting a cross-month week twice.
+      if(week.slice(0,7)!==m.key)continue;
+      totalDays+=st.required;totalDone+=st.completed;
+    }
+    const allWeeks=[];
+    const first=isoWeekStart('2026-10-07');
+    for(let d=parseDateStr(first);makeDateStr(d.getFullYear(),d.getMonth()+1,d.getDate())<=TODAY_STR;d.setDate(d.getDate()+7)) {
+      const w=makeDateStr(d.getFullYear(),d.getMonth()+1,d.getDate());
+      if(w>isoWeekStart(TODAY_STR))break;
+      allWeeks.push({week:w,...weeklyTargetWeekStats(h,w)});
+    }
+    let bestStreak=0,run=0;
+    for(const w of allWeeks){if(!w.required)continue;if(w.success){run++;bestStreak=Math.max(bestStreak,run);}else if(w.finished)run=0;}
+    let currentStreak=0;
+    for(let i=allWeeks.length-1;i>=0;i--){const w=allWeeks[i];if(!w.required)continue;if(w.success)currentStreak++;else if(!w.finished)continue;else break;}
+    return {totalDone,totalDays,rate:totalDays?Math.round(totalDone/totalDays*100):0,currentStreak,bestStreak,streakUnit:'w'};
+  }
   function getMonthCompletionRate(monthIdx) {
-    const m = MONTHS[monthIdx];
-    const totalDays = m.endDay - m.startDay + 1;
-    const totalPossible = totalDays * state.habits.length;
-    if (!totalPossible) return 0;
-    let completed = 0;
-    for (let d = m.startDay; d <= m.endDay; d++) {
-      const dStr = makeDateStr(m.year, m.month, d);
-      completed += getCompletedCountForDate(dStr);
+    let done=0,total=0;
+    for(const h of state.habits) {
+      const st=getHabitStatsInMonth(h.id,monthIdx);
+      done+=st.totalDone;total+=st.totalDays;
     }
-    return (completed / totalPossible) * 100;
+    return total?100*done/total:0;
+  }
+  function getHabitStatsInMonth(habitId,monthIdx) {
+    const h=state.habits.find(x=>x.id===habitId);
+    if(!h)return {totalDone:0,totalDays:0,rate:0,currentStreak:0,bestStreak:0,streakUnit:'d'};
+    if(h.schedule?.type==='weekly_target')return weeklyTargetMonthStats(h,monthIdx);
+    const dates=dueDatesInMonth(h,monthIdx).filter(ds=>!isPausedOn(h,ds)&&ds<=TODAY_STR);
+    let totalDone=0,bestStreak=0,temp=0;
+    for(const ds of dates){if(isHabitDone(habitId,ds)){totalDone++;temp++;bestStreak=Math.max(bestStreak,temp);}else temp=0;}
+    const upto=dates.filter(ds=>ds<=state.activeDate);let i=upto.length-1;
+    if(i>=0&&!isHabitDone(habitId,upto[i])&&upto[i]===TODAY_STR)i--;
+    let currentStreak=0;while(i>=0&&isHabitDone(habitId,upto[i])){currentStreak++;i--;}
+    return {totalDone,totalDays:dates.length,rate:dates.length?Math.round(100*totalDone/dates.length):0,currentStreak,bestStreak,streakUnit:'d'};
   }
 
-  function getHabitStatsInMonth(habitId, monthIdx) {
-    const m = MONTHS[monthIdx];
-    const totalDays = m.endDay - m.startDay + 1;
-    let totalDone = 0;
-    let currentStreak = 0;
-    let bestStreak = 0;
-    let tempStreak = 0;
-
-    // Limit current streak check up to activeDate if in current month, or endDay
-    for (let d = m.startDay; d <= m.endDay; d++) {
-      const dStr = makeDateStr(m.year, m.month, d);
-      const done = isHabitDone(habitId, dStr);
-      if (done) {
-        totalDone++;
-        tempStreak++;
-        if (tempStreak > bestStreak) bestStreak = tempStreak;
-      } else {
-        tempStreak = 0;
-      }
-    }
-
-    // Calculate active streak ending on activeDate (or latest completed day <= activeDate)
-    let checkDt = parseDateStr(state.activeDate);
-    if (!isHabitDone(habitId, state.activeDate)) {
-      const prevDt = new Date(checkDt);
-      prevDt.setDate(prevDt.getDate() - 1);
-      const prevStr = makeDateStr(prevDt.getFullYear(), prevDt.getMonth() + 1, prevDt.getDate());
-      if (isHabitDone(habitId, prevStr)) {
-        checkDt = prevDt;
-      }
-    }
-    const minDt = new Date(2026, 9, 7);
-    while (checkDt >= minDt) {
-      const s = makeDateStr(checkDt.getFullYear(), checkDt.getMonth() + 1, checkDt.getDate());
-      if (isHabitDone(habitId, s)) {
-        currentStreak++;
-        checkDt.setDate(checkDt.getDate() - 1);
-      } else {
-        break;
-      }
-    }
-
-    return {
-      totalDone,
-      totalDays,
-      rate: totalDays ? Math.round((totalDone / totalDays) * 100) : 0,
-      currentStreak,
-      bestStreak: Math.max(bestStreak, currentStreak)
-    };
-  }
-
-  // Build Google Calendar Template URL for a Habit
-  function buildGoogleCalendarUrl(habit, dateStr) {
-    const [hh, mm] = (habit.reminderTime || '08:00').split(':').map(Number);
-    const startDt = parseDateStr(dateStr || '2026-10-07');
-    const y = startDt.getFullYear();
-    const m = String(startDt.getMonth() + 1).padStart(2, '0');
-    const d = String(startDt.getDate()).padStart(2, '0');
-    const startH = String(hh).padStart(2, '0');
-    const startM = String(mm).padStart(2, '0');
-
-    // 30 minute reminder block
-    let endMinTotal = hh * 60 + mm + 30;
-    const endH = String(Math.floor(endMinTotal / 60) % 24).padStart(2, '0');
-    const endM = String(endMinTotal % 60).padStart(2, '0');
-
-    const datesParam = `${y}${m}${d}T${startH}${startM}00/${y}${m}${d}T${endH}${endM}00`;
-    const quote = getQuoteForDate(dateStr || state.activeDate);
-    const title = encodeURIComponent(`${habit.icon} Habit Goal: ${habit.name} (${habit.target})`);
-    const details = encodeURIComponent(
-      `Daily Target: ${habit.target}\nCategory: ${habit.category}\n\nDaily Spark: "${quote.text}" — ${quote.author}\n\nLogged via Sunlit Streaks Habit Dashboard`
-    );
-    const recur = encodeURIComponent('RRULE:FREQ=DAILY');
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${datesParam}&ctz=Australia/Brisbane&details=${details}&recur=${recur}`;
-  }
+  function calendarRule(h){const r=h.schedule||{type:'daily'};const weekdays=['SU','MO','TU','WE','TH','FR','SA'];switch(r.type){case 'weekly':return 'FREQ=WEEKLY;BYDAY='+weekdays[r.weekday];case 'fortnightly':return 'FREQ=DAILY;INTERVAL=14';case 'monthly':return 'FREQ=MONTHLY;BYMONTHDAY='+r.day;case 'nth_weekday':return 'FREQ=MONTHLY;BYDAY='+r.ordinal+weekdays[r.weekday];case 'every_n_days':return 'FREQ=DAILY;INTERVAL='+r.interval;case 'weekly_target':return null;default:return 'FREQ=DAILY';}}
+  function nextScheduledDate(h){try{const start=h.schedule?.anchor||TODAY_STR;const d=parseDateStr(start>TODAY_STR?start:TODAY_STR);for(let i=0;i<370;i++){const ds=makeDateStr(d.getFullYear(),d.getMonth()+1,d.getDate());if(isHabitDue(h,ds))return ds;d.setDate(d.getDate()+1);}return TODAY_STR;}catch(e){return TODAY_STR;}}
+  function buildGoogleCalendarUrl(habit){const [hh,mm]=(habit.reminderTime||'08:00').split(':').map(Number);const d=nextScheduledDate(habit).replace(/-/g,'');const st=String(hh).padStart(2,'0')+String(mm).padStart(2,'0');const end=new Date(2026,0,1,hh,mm+20);const et=String(end.getHours()).padStart(2,'0')+String(end.getMinutes()).padStart(2,'0');const params=new URLSearchParams({action:'TEMPLATE',text:'Habit: '+habit.name,dates:d+'T'+st+'00/'+d+'T'+et+'00',ctz:'Australia/Brisbane',details:'Goal: '+habit.target+' | Category: '+habit.category});const rule=calendarRule(habit);if(rule)params.set('recur','RRULE:'+rule);return 'https://calendar.google.com/calendar/render?'+params.toString();}
 
   // Render Header Quote & Top KPIs
   function renderHeaderAndQuote() {
@@ -1744,7 +1810,7 @@
     document.getElementById('dailyQuotePrompt').textContent = `🌱 ${q.focus}`;
 
     const doneToday = getCompletedCountForDate(state.activeDate);
-    const totalHabits = state.habits.length;
+    const totalHabits = dueHabits(state.activeDate).length;
     document.getElementById('kpiDoneToday').textContent = `${doneToday}/${totalHabits}`;
 
     let maxStreak = 0;
@@ -1762,14 +1828,14 @@
   // Render Tab 1: Daily Habit Cards
   function renderDailyHabits() {
     const doneCount = getCompletedCountForDate(state.activeDate);
-    const total = state.habits.length;
+    const total = dueHabits(state.activeDate).length;
     const pct = total ? Math.round((doneCount / total) * 100) : 0;
 
     document.getElementById('activeDayHeading').textContent = formatLongDate(state.activeDate);
     document.getElementById('activeDaySubtext').textContent =
       doneCount === total && total > 0
-        ? `🎉 Amazing! All ${total} daily goals completed for this day!`
-        : `${doneCount} of ${total} daily goals logged • Tap checkboxes to update`;
+        ? `🎉 Amazing! All ${total} scheduled goals completed for this day!`
+        : `${doneCount} of ${total} scheduled goals logged • Tap checkboxes to update`;
 
     const radial = document.getElementById('dayRadial');
     const deg = Math.round((pct / 100) * 360);
@@ -1791,9 +1857,10 @@
     const container = document.getElementById('habitCardsContainer');
     container.innerHTML = state.habits.map(h => {
       const done = isHabitDone(h.id, state.activeDate);
+      const due=isHabitDue(h,state.activeDate)&&!isPausedOn(h,state.activeDate);
       const stats = getHabitStatsInMonth(h.id, state.activeMonthIdx);
-      const catClass = h.category.startsWith('Personal') ? 'cat-Personal' : (h.category.startsWith('Well') ? 'cat-Well-being' : 'cat-Health');
-      const gcalUrl = buildGoogleCalendarUrl(h, state.activeDate);
+      const cat = String(h.category || 'Health'); const catClass = cat.startsWith('Personal') ? 'cat-Personal' : (cat.startsWith('Well') ? 'cat-Well-being' : 'cat-Health');
+      const gcalUrl = buildGoogleCalendarUrl(h);
 
       const miniDotsHtml = miniDates.map(dStr => {
         const dayNum = Number(dStr.split('-')[2]);
@@ -1801,24 +1868,26 @@
         const isCurr = dStr === state.activeDate;
         return `<div class="mini-dot ${isD ? 'done' : ''} ${isCurr ? 'current' : ''}"
                      onclick="toggleHabit('${h.id}', '${dStr}')"
+                     style="${(!isHabitDue(h,dStr)||isPausedOn(h,dStr))?'opacity:.28;cursor:default':''}"
                      title="${dStr}">${dayNum}</div>`;
       }).join('');
 
       return `
-        <div class="habit-card ${done ? 'completed' : ''}">
+        <div class="habit-card ${done ? 'completed' : ''} ${!due ? 'not-due' : ''}">
           <div class="habit-card-main">
-            <button class="check-btn" onclick="toggleHabit('${h.id}', '${state.activeDate}')" aria-label="Toggle ${h.name}">
+            <button class="check-btn" ${!due?'disabled title="Not scheduled today"':''} onclick="toggleHabit('${h.id}', '${state.activeDate}')" aria-label="Toggle ${h.name}">
               ✓
             </button>
             <div class="habit-info">
               <div class="habit-title-row">
                 <span style="font-size:1.05rem;">${h.icon || '✨'}</span>
-                <span class="habit-name">${h.name}</span>
-                <span class="cat-badge ${catClass}">${h.category}</span>
+                <span class="habit-name">${esc(h.name)}</span>
+                <span class="cat-badge ${catClass}" style="${categoryBadgeStyle(h.category)}">${esc(h.category)}</span>
               </div>
               <div class="habit-sub-row">
-                <span>🎯 Goal: <strong>${h.target}</strong></span>
-                <span class="streak-pill">🔥 ${stats.currentStreak}d streak (Best: ${stats.bestStreak}d)</span>
+                <span>🎯 Goal: <strong>${esc(h.target)}</strong></span>
+                <span>📆 ${scheduleLabel(h)} ${!due?(isPausedOn(h,state.activeDate)?'• Paused':'• Not due today'):''}</span>
+                <span class="streak-pill">🔥 ${stats.currentStreak}${stats.streakUnit} streak (Best: ${stats.bestStreak}${stats.streakUnit})</span>
                 <span>📈 ${stats.rate}% in ${MONTHS[state.activeMonthIdx].label}</span>
               </div>
             </div>
@@ -1830,25 +1899,26 @@
             </div>
             <div class="habit-card-actions">
               <button class="mini-action-btn" onclick="toggleEditHabit('${h.id}')" title="Edit habit">✏️ Edit</button>
-              <button class="mini-action-btn" onclick="deleteHabit('${h.id}')" title="Delete habit">🗑️</button>
-              <a href="${gcalUrl}" target="_blank" rel="noopener" class="cal-remind-btn">
-                📅 Remind (${h.reminderTime})
-              </a>
+              <button class="mini-action-btn" onclick="moveHabit('${h.id}',-1)" title="Move up">↑</button><button class="mini-action-btn" onclick="moveHabit('${h.id}',1)" title="Move down">↓</button><button class="mini-action-btn" onclick="togglePauseHabit('${h.id}')">${h.paused?'▶ Resume':'⏸ Pause'}</button><button class="mini-action-btn" onclick="deleteHabit('${h.id}')" title="Delete habit">🗑️</button>
+              ${(h.schedule?.type!=='weekly_target') ? `<a href="${gcalUrl}" target="_blank" rel="noopener" class="cal-remind-btn">📅 Remind (${h.reminderTime})</a>` : `<span class="cal-remind-btn" title="Create a matching repeating event manually in Google Calendar">📅 Calendar: set manually</span>`}
             </div>
           </div>
           <div class="inline-edit-box" id="editbox-${h.id}">
             <div class="form-row">
-              <input type="text" id="editname-${h.id}" class="form-input" value="${h.name.replace(/"/g, '&quot;')}" placeholder="Habit name" />
-              <input type="text" id="edittarget-${h.id}" class="form-input" value="${h.target.replace(/"/g, '&quot;')}" placeholder="Daily goal" />
+              <input type="text" id="editname-${h.id}" class="form-input" value="${esc(h.name)}" placeholder="Habit name" />
+              <input type="text" id="edittarget-${h.id}" class="form-input" value="${esc(h.target)}" placeholder="Daily goal" />
             </div>
             <div class="form-row">
               <select id="editcat-${h.id}" class="form-select">
-                <option value="Health" ${h.category === 'Health' ? 'selected' : ''}>Health</option>
-                <option value="Personal Growth" ${h.category === 'Personal Growth' ? 'selected' : ''}>Personal Growth</option>
-                <option value="Well-being" ${h.category === 'Well-being' ? 'selected' : ''}>Well-being</option>
+                ${categoryOptions(h.category)}
               </select>
-              <input type="time" id="edittime-${h.id}" class="form-input" value="${h.reminderTime}" />
+              <input type="time" id="edittime-${h.id}" class="form-input" value="${h.reminderTime || '08:00'}" />
             </div>
+            <label class="field-label">Frequency</label>
+            <select id="edit-${h.id}-newHabitFrequency" class="form-select" onchange="renderFrequencyOptions('edit-${h.id}-')">
+              <option value="daily">Daily habit</option><option value="weekly">Weekly habit</option><option value="fortnightly">Fortnightly habit</option><option value="monthly">Monthly habit</option><option value="weekly_target">X times per week</option><option value="every_n_days">Every X days</option><option value="nth_weekday">Every Nth weekday of the month</option>
+            </select>
+            <div id="edit-${h.id}-frequencyOptions" style="margin:8px 0 12px"></div>
             <div style="display:flex;gap:6px;">
               <button class="primary-btn" style="padding:7px 12px;font-size:0.76rem;" onclick="saveHabitEdit('${h.id}')">💾 Save Changes</button>
               <button class="cal-remind-btn" onclick="toggleEditHabit('${h.id}')">Cancel</button>
@@ -1861,7 +1931,22 @@
 
   function toggleEditHabit(habitId) {
     const box = document.getElementById('editbox-' + habitId);
-    if (box) box.classList.toggle('open');
+    if (!box) return;
+    const opening=!box.classList.contains('open');
+    box.classList.toggle('open');
+    if(opening){
+      const h=state.habits.find(x=>x.id===habitId);
+      const prefix='edit-'+habitId+'-';
+      const rule=h?.schedule||{type:'daily'};
+      document.getElementById(prefix+'newHabitFrequency').value=rule.type;
+      renderFrequencyOptions(prefix);
+      const assign=(id,value)=>{const el=document.getElementById(prefix+id);if(el&&value!==undefined)el.value=String(value);};
+      assign('freqWeekday',rule.weekday);
+      assign('freqAnchor',rule.anchor);
+      assign('freqMonthDay',rule.day);
+      assign('freqInterval',rule.interval);
+      assign('freqOrdinal',rule.ordinal);assign('freqWeeklyTarget',rule.count);
+    }
   }
 
   function saveHabitEdit(habitId) {
@@ -1875,15 +1960,81 @@
     if (targetEl && targetEl.value.trim()) h.target = targetEl.value.trim();
     if (catEl && catEl.value) h.category = catEl.value;
     if (timeEl && timeEl.value) h.reminderTime = timeEl.value;
+    let schedule;
+    try { schedule=selectedSchedule('edit-'+habitId+'-'); }
+    catch(e) { showToast(e.message); return; }
+    h.schedule=schedule;
     saveState();
     showToast(`✅ Updated "${h.name}"!`);
     renderAll();
   }
 
+  function togglePauseHabit(id){const h=state.habits.find(x=>x.id===id);if(!h)return;h.paused=!h.paused;saveState();renderAll();showToast(h.paused?'Habit paused':'Habit resumed');}
+  function moveHabit(id,dir){const i=state.habits.findIndex(h=>h.id===id),j=i+dir;if(i<0||j<0||j>=state.habits.length)return;[state.habits[i],state.habits[j]]=[state.habits[j],state.habits[i]];saveState();renderAll();}
+  function exportBackup(){const data={app:'Sunlit Streaks',version:2,exported:new Date().toISOString(),habits:state.habits,logs:state.logs,categories:state.categories||[],categoryColors:state.categoryColors||{}};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='sunlit-streaks-backup-'+TODAY_STR+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('Backup downloaded');}
+  async function importBackup(event){
+  const f=event.target.files?.[0];
+  if(!f)return;
+  try{
+    if(f.size>5000000)throw Error('Backup file too large');
+    const data=JSON.parse(await f.text());
+    if(data.app!=='Sunlit Streaks'||!Array.isArray(data.habits)||!data.logs||typeof data.logs!=='object'||Array.isArray(data.logs))
+      throw Error('Not a valid Sunlit Streaks backup');
+    if(!confirm('Restore this backup? This will replace ALL current habits and check-ins.'))return;
+
+    // Deep sanitize habits
+    const cleanHabits = data.habits
+      .filter(h => h && typeof h.id === 'string' && typeof h.name === 'string' && h.name.trim())
+      .slice(0, 500)
+      .map(h => ({
+        id: String(h.id),
+        name: String(h.name).trim().slice(0, 90),
+        category: String(h.category || 'Health').trim() || 'Health',
+        target: String(h.target || 'Daily completion').trim().slice(0, 90),
+        icon: h.icon || '✨',
+        reminderTime: /^\d{2}:\d{2}$/.test(h.reminderTime) ? h.reminderTime : '08:00',
+        schedule: (h.schedule && typeof h.schedule === 'object' && h.schedule.type) ? h.schedule : {type: 'daily'},
+        paused: !!h.paused,
+        pauseRanges: Array.isArray(h.pauseRanges) ? h.pauseRanges : []
+      }));
+
+    // Sanitize logs: only keep valid date keys and habit id entries that are truthy
+    const cleanLogs = {};
+    for (const [date, entries] of Object.entries(data.logs)) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !entries || typeof entries !== 'object') continue;
+      const cleanEntries = {};
+      for (const [hid, val] of Object.entries(entries)) {
+        if (val && typeof hid === 'string') cleanEntries[hid] = true;
+      }
+      if (Object.keys(cleanEntries).length) cleanLogs[date] = cleanEntries;
+    }
+
+    state.habits = cleanHabits;
+    state.logs = cleanLogs;
+    state.categories = Array.isArray(data.categories) ? data.categories.filter(c => typeof c === 'string').slice(0, 100) : [];
+    state.categoryColors = (data.categoryColors && typeof data.categoryColors === 'object') ? data.categoryColors : {};
+    saveState();
+    refreshCategorySelect();
+    renderAll();
+    showToast('Backup restored (' + cleanHabits.length + ' habits)');
+  } catch(e) {
+    alert('Restore failed: ' + e.message);
+  } finally {
+    event.target.value = '';
+  }
+}
+  function toggleCategoryManager(){const el=document.getElementById('categoryManager');el.style.display=el.style.display==='none'?'block':'none';renderCategoryManager();}
+  function renderCategoryManager(){const el=document.getElementById('categoryManager');if(!el)return;const cats=[...new Set([...BASE_CATEGORIES,...(state.categories||[]),...state.habits.map(h=>h.category)])];el.innerHTML=cats.map((cat,i)=>'<div class="form-row" style="align-items:center;margin:6px 0"><span>'+esc(cat)+'</span><div><input type="color" title="Category colour" value="'+(state.categoryColors?.[cat]||'#DBEAFE')+'" onchange="setCategoryColor('+i+',this.value)"><button class="mini-action-btn" onclick="renameCategory('+i+')">Rename</button><button class="mini-action-btn" onclick="removeCategory('+i+')">Delete</button></div></div>').join('');window._categoryNames=cats;}
+  function setCategoryColor(i,color){state.categoryColors=state.categoryColors||{};state.categoryColors[window._categoryNames[i]]=color;saveState();renderAll();}
+  function renameCategory(i){const old=window._categoryNames[i],name=prompt('New category name:',old)?.trim();if(!name||name===old)return;state.habits.forEach(h=>{if(h.category===old)h.category=name;});state.categories=[...new Set((state.categories||[]).map(c=>c===old?name:c).concat(name))];if(state.categoryColors?.[old]){state.categoryColors[name]=state.categoryColors[old];delete state.categoryColors[old];}saveState();refreshCategorySelect();renderAll();renderCategoryManager();}
+  function removeCategory(i){const name=window._categoryNames[i];if(state.habits.some(h=>h.category===name)){alert('Move habits into another category before deleting this one.');return;}if(!confirm('Delete category '+name+'?'))return;state.categories=(state.categories||[]).filter(c=>c!==name);if(state.categoryColors)delete state.categoryColors[name];saveState();refreshCategorySelect();renderCategoryManager();}
+  function categoryBadgeStyle(cat){const color=state.categoryColors?.[cat];return color?'background:'+color+';color:#172033;':'';}
   function deleteHabit(habitId) {
     const idx = state.habits.findIndex(x => x.id === habitId);
     if (idx === -1) return;
+    if (!confirm(`Delete "${state.habits[idx].name}" and its history?`)) return;
     const removed = state.habits.splice(idx, 1)[0];
+    Object.values(state.logs).forEach(log=>delete log[habitId]);
     saveState();
     showToast(`🗑️ Removed "${removed.name}"`);
     renderAll();
@@ -1898,11 +2049,12 @@
   }
 
   function clearAllHabitsAndLogs() {
+    if (!confirm('Delete ALL habits and their check-in history? This cannot be undone.')) return;
     state.habits = [];
     state.logs = {};
     state.demoMode = false;
     saveState();
-    showToast('✨ Cleared all default habits! Add your own below.');
+    showToast('All habits and check-ins deleted.');
     renderAll();
   }
 
@@ -1919,7 +2071,11 @@
       return;
     }
     const target = targetEl.value.trim() || 'Daily completion';
-    const category = catEl.value;
+    const category = catEl.value==='__new__' ? document.getElementById('newCategoryName').value.trim() : catEl.value;
+    if(!category){showToast('Enter a category name.');return;}
+    let schedule;try{schedule=selectedSchedule();}catch(e){showToast(e.message);return;}
+    if(!state.categories)state.categories=[];
+    if(!state.categories.includes(category))state.categories.push(category);
     const reminderTime = timeEl.value || '08:00';
 
     state.habits.push({
@@ -1928,12 +2084,14 @@
       category,
       target,
       icon: category === 'Health' ? '🌿' : (category === 'Personal Growth' ? '🚀' : '🌸'),
-      reminderTime
+      reminderTime,
+      schedule
     });
     nameEl.value = '';
     targetEl.value = '';
+    refreshCategorySelect();document.getElementById('newHabitCat').value=category;toggleNewCategory();
     saveState();
-    showToast(`Added "${name}" to your daily tracker!`);
+    showToast(`Added "${name}" to your tracker!`);
     renderAll();
   }
 
@@ -1959,9 +2117,10 @@
       for (let d = m.startDay; d <= m.endDay; d++) {
         const dStr = makeDateStr(m.year, m.month, d);
         const done = isHabitDone(h.id, dStr);
+        const due=isHabitDue(h,dStr);
         bodyHtml += `
           <td>
-            <div class="matrix-cell ${done ? 'done' : ''}"
+            <div class="matrix-cell ${done ? 'done' : ''}" style="${!due?'opacity:.2;cursor:default':''}"
                  onclick="toggleHabit('${h.id}', '${dStr}')">✓</div>
           </td>
         `;
@@ -2103,7 +2262,7 @@
         <div class="streak-leader-row">
           <div class="streak-leader-top">
             <span>${h.icon} ${h.name}</span>
-            <span style="color:var(--month-text-accent);">🔥 ${st.currentStreak}d cur • 🏆 ${st.bestStreak}d best • ${st.rate}% (${st.totalDone}/${st.totalDays}d)</span>
+            <span style="color:var(--month-text-accent);">🔥 ${st.currentStreak}${st.streakUnit} cur • 🏆 ${st.bestStreak}${st.streakUnit} best • ${st.rate}% (${st.totalDone}/${st.totalDays} completions)</span>
           </div>
           <div class="streak-bar-track">
             <div class="streak-bar-fill" style="width:${Math.max(st.rate, 3)}%"></div>
@@ -2157,7 +2316,7 @@
   function renderReminders() {
     const container = document.getElementById('remindersListContainer');
     container.innerHTML = state.habits.map(h => {
-      const gcalUrl = buildGoogleCalendarUrl(h, '2026-10-07');
+      const gcalUrl = buildGoogleCalendarUrl(h);
       return `
         <div class="reminder-row-card">
           <div class="reminder-top">
@@ -2165,14 +2324,12 @@
               <div style="font-weight:800;font-size:0.92rem;">${h.icon} ${h.name}</div>
               <div style="font-size:0.74rem;color:var(--text-muted);font-weight:600;">Target: ${h.target} • ${h.category}</div>
             </div>
-            <input type="time" class="time-input" value="${h.reminderTime}"
+            <input type="time" class="time-input" value="${h.reminderTime || '08:00'}"
                    onchange="updateReminderTime('${h.id}', this.value)" />
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span style="font-size:0.72rem;color:var(--text-muted);font-weight:600;">Repeats Daily • Australia/Brisbane</span>
-            <a href="${gcalUrl}" target="_blank" rel="noopener" class="gcal-action-link">
-              📅 Add Daily Google Calendar Reminder ↗
-            </a>
+            <span style="font-size:0.72rem;color:var(--text-muted);font-weight:600;">${scheduleLabel(h)} • Brisbane time</span>
+            ${calendarRule(h)?`<a href="${gcalUrl}" target="_blank" rel="noopener" class="gcal-action-link">📅 Add Google Calendar Reminder ↗</a>`:`<span class="cal-remind-btn">Set flexible weekly reminder manually in Calendar</span>`}
           </div>
         </div>
       `;
@@ -2189,7 +2346,7 @@
       'X-WR-TIMEZONE:Australia/Brisbane'
     ];
 
-    state.habits.forEach(h => {
+    state.habits.filter(h=>!h.paused&&h.schedule?.type!=='weekly_target').forEach(h => {
       const [hh, mm] = (h.reminderTime || '08:00').split(':').map(Number);
       const startH = String(hh).padStart(2, '0');
       const startM = String(mm).padStart(2, '0');
@@ -2200,10 +2357,10 @@
       icsLines.push(
         'BEGIN:VEVENT',
         `UID:${h.id}-oct2026@sunlitstreaks.local`,
-        'DTSTAMP:20261007T000000Z',
-        `DTSTART;TZID=Australia/Brisbane:20261007T${startH}${startM}00`,
-        `DTEND;TZID=Australia/Brisbane:20261007T${endH}${endM}00`,
-        'RRULE:FREQ=DAILY',
+        'DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'').replace('Z','Z'),
+        `DTSTART;TZID=Australia/Brisbane:${nextScheduledDate(h).replace(/-/g,'')}T${startH}${startM}00`,
+        `DTEND;TZID=Australia/Brisbane:${nextScheduledDate(h).replace(/-/g,'')}T${endH}${endM}00`,
+        ...(calendarRule(h)?['RRULE:'+calendarRule(h)]:[]),
         `SUMMARY:${h.icon} ${h.name} (${h.target})`,
         `DESCRIPTION:Daily Habit Goal: ${h.target} (${h.category})`,
         'BEGIN:VALARM',
@@ -2228,22 +2385,7 @@
     showToast('📥 Downloaded Google Calendar .ICS pack!');
   }
 
-  function requestBrowserNotifications() {
-    if (!('Notification' in window)) {
-      showToast('🔔 In-app banner reminders enabled!');
-      return;
-    }
-    Notification.requestPermission().then(perm => {
-      if (perm === 'granted') {
-        new Notification('☀️ Sunlit Streaks Reminders Active!', {
-          body: 'Your daily habit reminders are set for Australia/Brisbane time.'
-        });
-        showToast('🔔 Browser notifications enabled!');
-      } else {
-        showToast('🔔 Use the Google Calendar buttons below to add mobile alerts!');
-      }
-    });
-  }
+  function requestBrowserNotifications(){alert('For reliable phone alerts, use the Google Calendar reminder links or download the calendar file. Sunlit Streaks cannot send scheduled background notifications by itself.');}
 
   // Render Tab 5: Daily Motivational Quotes Feed for Active Month
   function renderQuotesFeed() {
@@ -2385,8 +2527,13 @@
   }
 
   // Initialize App
+  ensureMonthsThrough(TODAY_STR);
   loadState();
+  ensureMonthsThrough(state.activeDate || TODAY_STR);
+  state.activeMonthIdx = Math.max(0,MONTHS.findIndex(m=>m.key===(state.activeDate||TODAY_STR).slice(0,7)));
   applyMonthTheme();
+  refreshCategorySelect();
+  renderFrequencyOptions();
   renderAll();
   if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.warn));
 </script>
