@@ -1,0 +1,2394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sunlit Streaks</title>
+  <meta name="theme-color" content="#FF6B5B">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --month-primary: #FF6B5B;
+      --month-secondary: #FFA07A;
+      --month-bg: #FFF5F3;
+      --month-card-tint: #FFE8E4;
+      --month-text-accent: #C83E2B;
+      --month-gradient: linear-gradient(135deg, #FF6B5B 0%, #FF9E68 100%);
+      --bg-main: #FFFDF9;
+      --card-bg: #FFFFFF;
+      --text-main: #1E293B;
+      --text-muted: #64748B;
+      --border-soft: #F1F5F9;
+      --shadow-soft: 0 10px 25px -5px rgba(30, 41, 59, 0.06), 0 4px 10px -2px rgba(30, 41, 59, 0.04);
+      --shadow-glow: 0 8px 20px -4px rgba(255, 107, 91, 0.35);
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(circle at 10% 0%, var(--month-bg) 0%, #FFFDF9 55%, #F8FAFC 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-bottom: 96px;
+      transition: background 0.35s ease;
+    }
+
+    /* Desktop / Mobile Frame Wrapper */
+    .app-shell {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--bg-main);
+      box-shadow: 0 0 50px rgba(15, 23, 42, 0.08);
+      position: relative;
+      overflow-x: hidden;
+      transition: max-width 0.3s ease;
+    }
+
+    .app-shell.wide-mode {
+      max-width: 980px;
+    }
+
+    /* Top Hero Header */
+    .hero-header {
+      background: var(--month-gradient);
+      color: #FFFFFF;
+      padding: 20px 18px 24px;
+      border-bottom-left-radius: 28px;
+      border-bottom-right-radius: 28px;
+      box-shadow: var(--shadow-glow);
+      position: relative;
+      transition: background 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .hero-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-badge span.logo-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, 0.24);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      backdrop-filter: blur(6px);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-pill-btn {
+      background: rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: #FFFFFF;
+      border-radius: 999px;
+      padding: 6px 11px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      backdrop-filter: blur(6px);
+      transition: transform 0.15s ease, background 0.2s ease;
+      text-decoration: none;
+    }
+
+    .icon-pill-btn:hover {
+      background: rgba(255, 255, 255, 0.32);
+      transform: translateY(-1px);
+    }
+
+    /* Daily Quote Card Inside Header */
+    .quote-card {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      border-radius: 18px;
+      padding: 14px 15px;
+      backdrop-filter: blur(10px);
+      margin-bottom: 14px;
+    }
+
+    .quote-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 700;
+      opacity: 0.92;
+      margin-bottom: 6px;
+    }
+
+    .quote-nav-btns {
+      display: inline-flex;
+      gap: 4px;
+    }
+
+    .quote-nav-btn {
+      background: rgba(255, 255, 255, 0.22);
+      border: none;
+      color: #fff;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.78rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quote-text {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 1.08rem;
+      line-height: 1.38;
+      margin-bottom: 6px;
+      letter-spacing: 0.01em;
+    }
+
+    .quote-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.76rem;
+      font-weight: 600;
+      opacity: 0.95;
+    }
+
+    /* Hero KPI Strip */
+    .hero-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .hero-stat-box {
+      background: rgba(255, 255, 255, 0.95);
+      color: var(--text-main);
+      border-radius: 14px;
+      padding: 10px 10px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .hero-stat-val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--month-text-accent);
+      line-height: 1.15;
+    }
+
+    .hero-stat-lbl {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
+
+    /* Color-Coded Month Switcher */
+    .section-block {
+      padding: 14px 16px 0;
+    }
+
+    .section-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .month-pills-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 2px 10px;
+      scrollbar-width: none;
+    }
+    .month-pills-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .month-pill {
+      flex: 0 0 auto;
+      border: 2px solid transparent;
+      border-radius: 14px;
+      padding: 8px 13px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 74px;
+      position: relative;
+    }
+
+    .month-pill .m-name {
+      font-size: 0.82rem;
+      line-height: 1.1;
+    }
+
+    .month-pill .m-sub {
+      font-size: 0.64rem;
+      font-weight: 700;
+      opacity: 0.82;
+      margin-top: 2px;
+    }
+
+    .month-pill.active {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Date Ribbon Scroller */
+    .date-ribbon {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      padding: 4px 2px 12px;
+      scrollbar-width: none;
+    }
+    .date-ribbon::-webkit-scrollbar {
+      display: none;
+    }
+
+    .day-chip {
+      flex: 0 0 auto;
+      width: 50px;
+      border-radius: 14px;
+      background: #FFFFFF;
+      border: 1.5px solid #E2E8F0;
+      padding: 8px 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      position: relative;
+    }
+
+    .day-chip .d-dow {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .day-chip .d-num {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin: 2px 0;
+    }
+
+    .day-chip .d-dot-bar {
+      height: 4px;
+      width: 26px;
+      margin: 3px auto 0;
+      border-radius: 99px;
+      background: #E2E8F0;
+      overflow: hidden;
+    }
+
+    .day-chip .d-dot-fill {
+      height: 100%;
+      background: var(--month-primary);
+      border-radius: 99px;
+      transition: width 0.25s ease;
+    }
+
+    .day-chip.active {
+      background: var(--month-primary);
+      border-color: var(--month-primary);
+      color: #FFFFFF;
+      box-shadow: 0 6px 14px -2px rgba(0, 0, 0, 0.16);
+      transform: translateY(-2px);
+    }
+
+    .day-chip.active .d-dow,
+    .day-chip.active .d-num {
+      color: #FFFFFF;
+    }
+
+    .day-chip.active .d-dot-bar {
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    .day-chip.active .d-dot-fill {
+      background: #FFFFFF;
+    }
+
+    .day-chip.is-today::after {
+      content: 'TODAY';
+      position: absolute;
+      top: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0F172A;
+      color: #FFF;
+      font-size: 0.5rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 99px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Main Content Views */
+    .view-panel {
+      display: none;
+      padding: 6px 16px 24px;
+      animation: fadeIn 0.22s ease;
+    }
+
+    .view-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Active Day Progress Banner */
+    .day-summary-card {
+      background: var(--month-bg);
+      border: 1.5px solid var(--month-card-tint);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .day-summary-left h2 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .day-summary-left p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .radial-progress {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.82rem;
+      color: var(--month-text-accent);
+      background: conic-gradient(var(--month-primary) 0deg, #E2E8F0 0deg);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .radial-progress-inner {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Habit Cards List */
+    .habit-list {
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .habit-card {
+      background: var(--card-bg);
+      border: 1.5px solid #EDF2F7;
+      border-radius: var(--radius-md);
+      padding: 13px 14px;
+      box-shadow: var(--shadow-soft);
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .habit-card.completed {
+      border-color: var(--month-primary);
+      background: linear-gradient(to right, #FFFFFF 85%, var(--month-bg) 100%);
+    }
+
+    .habit-card-main {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .check-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 2.5px solid #CBD5E1;
+      background: #F8FAFC;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      color: transparent;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      flex-shrink: 0;
+    }
+
+    .habit-card.completed .check-btn {
+      background: var(--month-primary);
+      border-color: var(--month-primary);
+      color: #FFFFFF;
+      transform: scale(1.04);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .habit-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .habit-title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .habit-name {
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: var(--text-main);
+      transition: color 0.2s;
+    }
+
+    .habit-card.completed .habit-name {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .cat-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .cat-Health { background: #DCFCE7; color: #15803D; }
+    .cat-Personal { background: #DBEAFE; color: #1D4ED8; }
+    .cat-Well-being { background: #F3E8FF; color: #7E22CE; }
+
+    .habit-sub-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      flex-wrap: wrap;
+    }
+
+    .streak-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: #FFF7ED;
+      color: #C2410C;
+      border: 1px solid #FFEDD5;
+      padding: 2px 7px;
+      border-radius: 99px;
+      font-size: 0.7rem;
+      font-weight: 800;
+    }
+
+    .habit-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      padding-top: 9px;
+      border-top: 1px dashed #E2E8F0;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mini-week-dots {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .mini-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      font-size: 0.6rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #F1F5F9;
+      color: #64748B;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .mini-dot.done {
+      background: var(--month-primary);
+      color: #FFFFFF;
+    }
+
+    .mini-dot.current {
+      border-color: #0F172A;
+    }
+
+    .cal-remind-btn {
+      background: #F8FAFC;
+      border: 1px solid #CBD5E1;
+      color: #334155;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 9px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .cal-remind-btn:hover {
+      background: var(--month-bg);
+      border-color: var(--month-primary);
+      color: var(--month-text-accent);
+    }
+
+    .habit-card-actions {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .mini-action-btn {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      color: #475569;
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .mini-action-btn:hover {
+      background: var(--month-bg);
+      border-color: var(--month-primary);
+      color: var(--month-text-accent);
+    }
+
+    .inline-edit-box {
+      margin-top: 10px;
+      padding: 10px;
+      background: #F8FAFC;
+      border: 1.5px solid #CBD5E1;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .inline-edit-box.open {
+      display: block;
+    }
+
+    /* Add Habit Form Card */
+    .add-habit-box {
+      background: #FFFFFF;
+      border: 1.5px dashed #CBD5E1;
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-top: 14px;
+    }
+
+    .add-habit-box h3 {
+      font-size: 0.88rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      color: var(--text-main);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 10px;
+      border: 1.5px solid #CBD5E1;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-main);
+      background: #F8FAFC;
+    }
+
+    .primary-btn {
+      background: var(--month-gradient);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 11px;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 800;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: var(--shadow-glow);
+      transition: transform 0.15s ease;
+    }
+
+    .primary-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Monthly Grid Matrix View */
+    .matrix-card {
+      background: #FFFFFF;
+      border-radius: var(--radius-md);
+      padding: 14px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid #EDF2F7;
+      overflow-x: auto;
+    }
+
+    .matrix-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 3px;
+      font-size: 0.75rem;
+    }
+
+    .matrix-table th, .matrix-table td {
+      text-align: center;
+      padding: 5px 4px;
+      border-radius: 6px;
+    }
+
+    .matrix-table th.sticky-col,
+    .matrix-table td.sticky-col {
+      position: sticky;
+      left: 0;
+      background: #FFFFFF;
+      text-align: left;
+      min-width: 135px;
+      max-width: 150px;
+      font-weight: 700;
+      z-index: 2;
+      border-right: 2px solid #F1F5F9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .matrix-cell {
+      width: 26px;
+      height: 26px;
+      border-radius: 7px;
+      background: #F1F5F9;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: transparent;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .matrix-cell.done {
+      background: var(--month-primary);
+      color: #FFFFFF;
+    }
+
+    /* Charts & Analytics Cards */
+    .chart-card {
+      background: #FFFFFF;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid #EDF2F7;
+      margin-bottom: 14px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      gap: 8px;
+    }
+
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .chart-subtitle {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .week-selector {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .week-tab-btn {
+      background: #F1F5F9;
+      border: 1px solid #E2E8F0;
+      color: #475569;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 5px 10px;
+      border-radius: 99px;
+      cursor: pointer;
+    }
+
+    .week-tab-btn.active {
+      background: var(--month-primary);
+      border-color: var(--month-primary);
+      color: #FFFFFF;
+    }
+
+    /* Leaderboard Bars */
+    .streak-leader-row {
+      margin-bottom: 11px;
+    }
+
+    .streak-leader-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .streak-bar-track {
+      height: 10px;
+      background: #F1F5F9;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .streak-bar-fill {
+      height: 100%;
+      background: var(--month-gradient);
+      border-radius: 99px;
+      transition: width 0.35s ease;
+    }
+
+    /* Calendar Reminders View */
+    .reminder-row-card {
+      background: #FFFFFF;
+      border: 1.5px solid #EDF2F7;
+      border-radius: var(--radius-md);
+      padding: 13px 14px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .reminder-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-input {
+      padding: 6px 9px;
+      border-radius: 9px;
+      border: 1.5px solid #CBD5E1;
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-main);
+      background: #F8FAFC;
+    }
+
+    .gcal-action-link {
+      background: var(--month-gradient);
+      color: #FFFFFF;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Quotes Feed View */
+    .quote-feed-item {
+      background: #FFFFFF;
+      border-left: 4px solid var(--month-primary);
+      border-radius: 14px;
+      padding: 13px 15px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .quote-feed-date {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: var(--month-text-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .quote-feed-text {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 1rem;
+      color: var(--text-main);
+      line-height: 1.38;
+      margin-bottom: 4px;
+    }
+
+    .quote-feed-author {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    /* Sticky Bottom Mobile Navbar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 24px);
+      max-width: 456px;
+      background: rgba(15, 23, 42, 0.94);
+      backdrop-filter: blur(14px);
+      border-radius: 22px;
+      padding: 7px 8px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      z-index: 999;
+      box-shadow: 0 15px 35px rgba(15, 23, 42, 0.28);
+    }
+
+    .nav-tab {
+      background: transparent;
+      border: none;
+      color: #94A3B8;
+      padding: 7px 4px;
+      border-radius: 15px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-family: inherit;
+      font-size: 0.66rem;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tab .nav-ico {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .nav-tab.active {
+      background: var(--month-primary);
+      color: #FFFFFF;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Toast Notification */
+    .toast-msg {
+      position: fixed;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: #0F172A;
+      color: #FFFFFF;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      z-index: 2000;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+    }
+
+    .toast-msg.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    svg.chart-svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      overflow: visible;
+    }
+  </style>
+</head>
+<body>
+
+<div id="toast" class="toast-msg">Saved! ✨</div>
+
+<div class="app-shell" id="appShell">
+  <!-- HERO HEADER -->
+  <header class="hero-header">
+    <div class="hero-top-bar">
+      <div class="brand-badge">
+        <span class="logo-dot">☀️</span>
+        <span>Sunlit Streaks</span>
+      </div>
+      <div class="header-actions">
+        <button class="icon-pill-btn" onclick="toggleDemoData()" id="demoBtn" style="display:none" title="Toggle sample streak data to preview charts">
+          ✨ Demo Streaks
+        </button>
+        <button class="icon-pill-btn" onclick="toggleWideMode()" id="layoutBtn" title="Switch mobile/expanded layout">
+          📱 View
+        </button>
+      </div>
+    </div>
+
+    <!-- DAILY MOTIVATIONAL QUOTE BANNER -->
+    <div class="quote-card">
+      <div class="quote-card-top">
+        <span id="quoteDateLabel">💡 Daily Spark • Thu, Oct 15, 2026</span>
+        <div class="quote-nav-btns">
+          <button class="quote-nav-btn" onclick="stepActiveDate(-1)" title="Previous Day">‹</button>
+          <button class="quote-nav-btn" onclick="stepActiveDate(1)" title="Next Day">›</button>
+        </div>
+      </div>
+      <div class="quote-text" id="dailyQuoteText">
+        "Small daily disciplines compound into extraordinary transformations over time."
+      </div>
+      <div class="quote-meta">
+        <span id="dailyQuoteAuthor">— Robin Sharma</span>
+        <span id="dailyQuotePrompt" style="opacity:0.88;">🌱 Focus: Consistency over intensity</span>
+      </div>
+    </div>
+
+    <!-- HERO KPI STRIP -->
+    <div class="hero-stats-grid">
+      <div class="hero-stat-box">
+        <div class="hero-stat-val" id="kpiDoneToday">0/7</div>
+        <div class="hero-stat-lbl">Selected Day</div>
+      </div>
+      <div class="hero-stat-box">
+        <div class="hero-stat-val" id="kpiTopStreak">2 🔥</div>
+        <div class="hero-stat-lbl">Best Streak</div>
+      </div>
+      <div class="hero-stat-box">
+        <div class="hero-stat-val" id="kpiMonthRate">0%</div>
+        <div class="hero-stat-lbl" id="kpiMonthLbl">Oct 26 Rate</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- COLOR-CODED MONTH BAR -->
+  <div class="section-block">
+    <div class="section-label-row">
+      <span class="section-title">🎨 Color-Coded Months (Oct 7, 2026 – Sep 2027)</span>
+      <span style="font-size:0.72rem;font-weight:700;color:var(--month-text-accent);" id="activeMonthBadge">Oct 2026 (Starts Oct 7)</span>
+    </div>
+    <div class="month-pills-scroll" id="monthPillsContainer"></div>
+  </div>
+
+  <!-- DATE SCROLLER RIBBON -->
+  <div class="section-block" style="padding-top:4px;">
+    <div class="date-ribbon" id="dateRibbonContainer"></div>
+  </div>
+
+  <!-- TAB 1: DAILY CHECK-IN VIEW -->
+  <main id="view-today" class="view-panel active">
+    <div class="day-summary-card">
+      <div class="day-summary-left">
+        <h2 id="activeDayHeading">Thursday, Oct 15, 2026</h2>
+        <p id="activeDaySubtext">Tap any habit below to log your daily goal & build your streak!</p>
+      </div>
+      <div class="radial-progress" id="dayRadial">
+        <div class="radial-progress-inner" id="dayRadialText">0%</div>
+      </div>
+    </div>
+
+    <div class="habit-list" id="habitCardsContainer"></div>
+
+    <!-- Add New Habit Form -->
+    <div class="add-habit-box">
+      <h3>➕ Add a Custom Daily Goal</h3>
+      <div class="form-row">
+        <input type="text" id="newHabitName" class="form-input" placeholder="Habit name (e.g., Stretching)" />
+        <input type="text" id="newHabitTarget" class="form-input" placeholder="Daily goal (e.g., 15 mins)" />
+      </div>
+      <div class="form-row">
+        <select id="newHabitCat" class="form-select">
+          <option value="Health">Health</option>
+          <option value="Personal Growth">Personal Growth</option>
+          <option value="Well-being">Well-being</option>
+        </select>
+        <input type="time" id="newHabitTime" class="form-input" value="08:00" />
+      </div>
+      <button class="primary-btn" onclick="addNewHabit()">Add Habit & Reminder</button>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button class="cal-remind-btn" style="flex:1;justify-content:center;" onclick="clearAllLogsOnly()">
+          🧹 Clear Sample Check-Ins (Keep Habits)
+        </button>
+        <button class="cal-remind-btn" style="flex:1;justify-content:center;" onclick="clearAllHabitsAndLogs()">
+          ✨ Start Blank (Remove All Default Habits)
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- TAB 2: MONTHLY COLOR-CODED GRID VIEW -->
+  <section id="view-grid" class="view-panel">
+    <div class="chart-card" style="margin-bottom:12px;padding:12px 14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div class="chart-title" id="gridMonthTitle">October 2026 Habit Matrix (Days 7–31)</div>
+          <div class="chart-subtitle">Tap any square to toggle completion • Color-coded monthly streak grid</div>
+        </div>
+        <button class="cal-remind-btn" onclick="exportProgressCSV()">
+          📥 Export CSV Report
+        </button>
+      </div>
+    </div>
+    <div class="matrix-card">
+      <table class="matrix-table" id="monthlyMatrixTable"></table>
+    </div>
+  </section>
+
+  <!-- TAB 3: WEEKLY & MONTHLY STREAK CHARTS & GRAPHS -->
+  <section id="view-charts" class="view-panel">
+    <!-- Weekly Bar Chart -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">📈 Weekly Completion & Streak Graph</div>
+          <div class="chart-subtitle">Daily goals completed per day across each week of the month</div>
+        </div>
+      </div>
+      <div class="week-selector" id="weekSelectorBtns"></div>
+      <div id="weeklyBarChartWrap"></div>
+    </div>
+
+    <!-- Monthly Daily Trend Line/Area Graph -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title" id="monthlyTrendTitle">🌊 Monthly Daily Consistency Curve</div>
+          <div class="chart-subtitle">Daily completion percentage across the active month</div>
+        </div>
+      </div>
+      <div id="monthlyTrendChartWrap"></div>
+    </div>
+
+    <!-- Habit Streak Leaderboard -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">🔥 Habit Streak & Completion Leaderboard</div>
+          <div class="chart-subtitle">Current streak, best streak & monthly goal completion rate</div>
+        </div>
+      </div>
+      <div id="streakLeaderboardWrap"></div>
+    </div>
+
+    <!-- 12-Month Color-Coded Overview Graph -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">🌈 12-Month Color-Coded Overview (Oct 26 – Sep 27)</div>
+          <div class="chart-subtitle">Monthly average completion rate with each month's signature color</div>
+        </div>
+      </div>
+      <div id="annualOverviewChartWrap"></div>
+    </div>
+  </section>
+
+  <!-- TAB 4: GOOGLE CALENDAR REMINDERS INTEGRATION -->
+  <section id="view-reminders" class="view-panel">
+    <div class="chart-card" style="background:var(--month-bg);border-color:var(--month-card-tint);">
+      <div class="chart-title">📅 Google Calendar Habit Reminders</div>
+      <div class="chart-subtitle" style="margin-top:4px;color:var(--text-main);">
+        Set your preferred daily reminder time (Australia/Brisbane AEST) for each habit. Tap <strong>Add Daily Reminder</strong> to open a pre-filled recurring Google Calendar event starting Oct 7, 2026, or download a combined <code>.ics</code> reminder file.
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <button class="primary-btn" style="flex:1;" onclick="downloadAllRemindersICS()">
+          📥 Download All Reminders (.ICS)
+        </button>
+        <button class="cal-remind-btn" style="padding:10px 14px;" onclick="requestBrowserNotifications()">
+          🔔 Enable In-App Alerts
+        </button>
+      </div>
+    </div>
+
+    <div id="remindersListContainer"></div>
+
+    <!-- Custom Google Calendar Event Builder -->
+    <div class="chart-card" style="margin-top:14px;">
+      <div class="chart-title">⚡ Custom Google Calendar Reminder Builder</div>
+      <div class="chart-subtitle" style="margin-bottom:10px;">Create a custom one-off or recurring Google Calendar reminder for any goal</div>
+      <div class="form-row">
+        <input type="text" id="customCalTitle" class="form-input" placeholder="Reminder title (e.g., Evening Stretch)" value="Weekly Streak Review & Goal Check-In" />
+        <input type="time" id="customCalTime" class="form-input" value="09:00" />
+      </div>
+      <div class="form-row">
+        <select id="customCalRecur" class="form-select">
+          <option value="DAILY">Repeats Daily</option>
+          <option value="WEEKLY">Repeats Weekly</option>
+          <option value="ONCE">One-Time Event</option>
+        </select>
+        <button class="cal-remind-btn" style="justify-content:center;" onclick="openCustomCalendarReminder()">
+          📅 Create in Google Calendar ↗
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 5: DAILY MOTIVATIONAL QUOTES EXPLORER -->
+  <section id="view-quotes" class="view-panel">
+    <div class="chart-card" style="margin-bottom:12px;">
+      <div class="chart-title" id="quotesMonthHeader">💬 Daily Motivational Quotes — October 2026</div>
+      <div class="chart-subtitle">A fresh daily quote and mindful intention for every single day starting October 7, 2026</div>
+    </div>
+    <div id="quotesFeedContainer"></div>
+  </section>
+</div>
+
+<!-- STICKY MOBILE BOTTOM NAVIGATION -->
+<nav class="bottom-nav">
+  <button class="nav-tab active" onclick="switchView('today', this)">
+    <span class="nav-ico">✅</span>
+    <span>Today</span>
+  </button>
+  <button class="nav-tab" onclick="switchView('grid', this)">
+    <span class="nav-ico">🗓️</span>
+    <span>Month Grid</span>
+  </button>
+  <button class="nav-tab" onclick="switchView('charts', this)">
+    <span class="nav-ico">📊</span>
+    <span>Streaks</span>
+  </button>
+  <button class="nav-tab" onclick="switchView('reminders', this)">
+    <span class="nav-ico">🔔</span>
+    <span>Reminders</span>
+  </button>
+  <button class="nav-tab" onclick="switchView('quotes', this)">
+    <span class="nav-ico">✨</span>
+    <span>Quotes</span>
+  </button>
+</nav>
+
+<script>
+  // 12 Color-Coded Months (Starting Oct 7, 2026 through Sep 30, 2027)
+  const MONTHS = [
+    {
+      key: '2026-10', label: 'Oct 26', fullName: 'October 2026', year: 2026, month: 10,
+      startDay: 7, endDay: 31,
+      primary: '#FF6B5B', secondary: '#FF9E68', bg: '#FFF5F3', tint: '#FFE4DF', accentText: '#C83E2B',
+      themeName: 'Coral Sunrise'
+    },
+    {
+      key: '2026-11', label: 'Nov 26', fullName: 'November 2026', year: 2026, month: 11,
+      startDay: 1, endDay: 30,
+      primary: '#F59E0B', secondary: '#FBBF24', bg: '#FFFBEB', tint: '#FEF3C7', accentText: '#B45309',
+      themeName: 'Amber Marigold'
+    },
+    {
+      key: '2026-12', label: 'Dec 26', fullName: 'December 2026', year: 2026, month: 12,
+      startDay: 1, endDay: 31,
+      primary: '#EC4899', secondary: '#F472B6', bg: '#FDF2F8', tint: '#FCE7F3', accentText: '#BE185D',
+      themeName: 'Berry Festive'
+    },
+    {
+      key: '2027-01', label: 'Jan 27', fullName: 'January 2027', year: 2027, month: 1,
+      startDay: 1, endDay: 31,
+      primary: '#0EA5E9', secondary: '#38BDF8', bg: '#F0F9FF', tint: '#E0F2FE', accentText: '#0369A1',
+      themeName: 'Ocean Teal'
+    },
+    {
+      key: '2027-02', label: 'Feb 27', fullName: 'February 2027', year: 2027, month: 2,
+      startDay: 1, endDay: 28,
+      primary: '#F43F5E', secondary: '#FB7185', bg: '#FFF1F2', tint: '#FFE4E6', accentText: '#BE123C',
+      themeName: 'Rose Quartz'
+    },
+    {
+      key: '2027-03', label: 'Mar 27', fullName: 'March 2027', year: 2027, month: 3,
+      startDay: 1, endDay: 31,
+      primary: '#10B981', secondary: '#34D399', bg: '#ECFDF5', tint: '#D1FAE5', accentText: '#047857',
+      themeName: 'Emerald Spring'
+    },
+    {
+      key: '2027-04', label: 'Apr 27', fullName: 'April 2027', year: 2027, month: 4,
+      startDay: 1, endDay: 30,
+      primary: '#8B5CF6', secondary: '#A78BFA', bg: '#F5F3FF', tint: '#EDE9FE', accentText: '#6D28D9',
+      themeName: 'Lavender Bloom'
+    },
+    {
+      key: '2027-05', label: 'May 27', fullName: 'May 2027', year: 2027, month: 5,
+      startDay: 1, endDay: 31,
+      primary: '#EAB308', secondary: '#FACC15', bg: '#FEFCE8', tint: '#FEF9C3', accentText: '#A16207',
+      themeName: 'Sunny Citrus'
+    },
+    {
+      key: '2027-06', label: 'Jun 27', fullName: 'June 2027', year: 2027, month: 6,
+      startDay: 1, endDay: 30,
+      primary: '#06B6D4', secondary: '#22D3EE', bg: '#ECFEFF', tint: '#CFFAFE', accentText: '#0E7490',
+      themeName: 'Tropical Cyan'
+    },
+    {
+      key: '2027-07', label: 'Jul 27', fullName: 'July 2027', year: 2027, month: 7,
+      startDay: 1, endDay: 31,
+      primary: '#6366F1', secondary: '#818CF8', bg: '#EEF2FF', tint: '#E0E7FF', accentText: '#4338CA',
+      themeName: 'Indigo Sky'
+    },
+    {
+      key: '2027-08', label: 'Aug 27', fullName: 'August 2027', year: 2027, month: 8,
+      startDay: 1, endDay: 31,
+      primary: '#F97316', secondary: '#FB923C', bg: '#FFF7ED', tint: '#FFEDD5', accentText: '#C2410C',
+      themeName: 'Peach Nectar'
+    },
+    {
+      key: '2027-09', label: 'Sep 27', fullName: 'September 2027', year: 2027, month: 9,
+      startDay: 1, endDay: 30,
+      primary: '#14B8A6', secondary: '#2DD4BF', bg: '#F0FDFA', tint: '#CCFBF1', accentText: '#0F766E',
+      themeName: 'Sage Botanical'
+    }
+  ];
+
+  // Original standalone habits designed for Sunlit Streaks
+  const INITIAL_HABITS = [
+    {
+      id: 'h_acv',
+      name: 'Morning Sunlight & Stretch',
+      category: 'Well-being',
+      target: '15 mins outdoors',
+      icon: '☀️',
+      reminderTime: '07:00'
+    },
+    {
+      id: 'h_hydration',
+      name: 'Daily Hydration Goal',
+      category: 'Health',
+      target: '8 glasses (2L)',
+      icon: '💧',
+      reminderTime: '08:30'
+    },
+    {
+      id: 'h_tablets',
+      name: 'Deep Focus Sprint',
+      category: 'Personal Growth',
+      target: '45 mins uninterrupted',
+      icon: '🎯',
+      reminderTime: '10:00'
+    },
+    {
+      id: 'h_exercise',
+      name: 'Active Movement & Cardio',
+      category: 'Health',
+      target: '30 mins activity',
+      icon: '🏃‍♀️',
+      reminderTime: '17:30'
+    },
+    {
+      id: 'h_meditation',
+      name: 'Mindful Gratitude Journal',
+      category: 'Well-being',
+      target: '3 daily wins',
+      icon: '✨',
+      reminderTime: '19:30'
+    },
+    {
+      id: 'h_reading',
+      name: 'Evening Reading & Learning',
+      category: 'Personal Growth',
+      target: '20 pages',
+      icon: '📖',
+      reminderTime: '20:30'
+    },
+    {
+      id: 'h_sleep',
+      name: 'Screen-Free Wind-Down',
+      category: 'Well-being',
+      target: '30 mins before sleep',
+      icon: '🌙',
+      reminderTime: '21:45'
+    }
+  ];
+
+  // Curated Daily Motivational Quotes Library (Indexed deterministically for every single day)
+  const QUOTES_LIBRARY = [
+    { text: "Every morning brings a fresh page; what you write on October 7 sets the tone for the season ahead.", author: "Oprah Winfrey", focus: "Begin with self-compassion" },
+    { text: "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", author: "Will Durant", focus: "Honor small promises" },
+    { text: "Success is the sum of small efforts, repeated day in and day out.", author: "Robert Collier", focus: "One percent better today" },
+    { text: "You do not rise to the level of your goals. You fall to the level of your systems.", author: "James Clear", focus: "Build gentle routines" },
+    { text: "Discipline is choosing between what you want now and what you want most.", author: "Abraham Lincoln", focus: "Protect your peace" },
+    { text: "Action is the foundational key to all success.", author: "Pablo Picasso", focus: "Start with 5 minutes" },
+    { text: "Little by little, a little becomes a lot.", author: "Tanzanian Proverb", focus: "Celebrate every check-in" },
+    { text: "The secret of your future is hidden in your daily routine.", author: "Mike Murdock", focus: "Nourish body & mind" },
+    { text: "Small daily disciplines compound into extraordinary transformations over time.", author: "Robin Sharma", focus: "Consistency over intensity" },
+    { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson", focus: "Steady forward motion" },
+    { text: "Be patient with yourself. Self-growth is tender; it's holy ground.", author: "Stephen Covey", focus: "Grace over perfection" },
+    { text: "Energy and persistence conquer all things.", author: "Benjamin Franklin", focus: "Hydrate and move gently" },
+    { text: "What you get by achieving your goals is not as important as what you become by achieving your goals.", author: "Zig Ziglar", focus: "Identity-driven habits" },
+    { text: "A year from now you may wish you had started today.", author: "Karen Lamb", focus: "Thank your past self" },
+    { text: "Your calm mind is the ultimate weapon against your challenges.", author: "Bryant McGill", focus: "10 minutes of stillness" },
+    { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius", focus: "Unbroken momentum" },
+    { text: "Take care of your body. It's the only place you have to live.", author: "Jim Rohn", focus: "Vitality & rest" },
+    { text: "Happiness is not something ready-made. It comes from your own actions.", author: "Dalai Lama", focus: "Mindful choices" },
+    { text: "Chains of habit are too light to be felt until they are too heavy to be broken—build liberating ones.", author: "Warren Buffett", focus: "Empowering rituals" },
+    { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt", focus: "Inner confidence" },
+    { text: "Almost everything will work again if you unplug it for a few minutes, including you.", author: "Anne Lamott", focus: "Restorative sleep" },
+    { text: "The only impossible journey is the one you never begin.", author: "Tony Robbins", focus: "Show up for yourself" },
+    { text: "Motivation is what gets you started. Habit is what keeps you going.", author: "Jim Ryun", focus: "Automatic cues" },
+    { text: "Drop by drop is the water pot filled.", author: "Buddha", focus: "Daily accumulation" },
+    { text: "He who has a why to live can bear almost any how.", author: "Viktor Frankl", focus: "Reconnect with your why" },
+    { text: "Do something today that your future self will thank you for.", author: "Sean Patrick Flanery", focus: "Evening wind-down" },
+    { text: "First forget inspiration. Habit is more dependable. Habit will sustain you whether you're inspired or not.", author: "Octavia Butler", focus: "Steady rhythm" },
+    { text: "How we spend our days is, of course, how we spend our lives.", author: "Annie Dillard", focus: "Present-moment awareness" },
+    { text: "Start where you are. Use what you have. Do what you can.", author: "Arthur Ashe", focus: "Zero-guilt progress" },
+    { text: "Peace comes from within. Do not seek it without.", author: "Buddha", focus: "Emotional resilience" },
+    { text: "Every strike brings me closer to the next home run.", author: "Babe Ruth", focus: "Bounce back quickly" },
+    { text: "Look closely at the present you are constructing: it should look like the future you are dreaming.", author: "Alice Walker", focus: "Intentional living" },
+    { text: "Great things are not done by impulse, but by a series of small things brought together.", author: "Vincent van Gogh", focus: "Brushstrokes of habit" },
+    { text: "Self-care is how you take your power back.", author: "Lalah Delia", focus: "Prioritize well-being" },
+    { text: "Consistency is the true foundation of trust. Either keep your promises or do not make them.", author: "Roy T. Bennett", focus: "Self-trust" }
+  ];
+
+  const STORAGE_KEY = 'sunlit_streaks_personal_pwa_v1';
+  const TODAY_STR = (() => { const now = new Date(); const today = makeDateStr(now.getFullYear(), now.getMonth()+1, now.getDate()); return today < '2026-10-07' ? '2026-10-07' : (today > '2027-09-30' ? '2027-09-30' : today); })();
+
+  const DEFAULT_LOGS = {
+    '2026-10-07': { 'h_acv': true, 'h_hydration': true, 'h_tablets': true, 'h_exercise': true, 'h_meditation': true, 'h_reading': true },
+    '2026-10-08': { 'h_acv': true, 'h_hydration': true, 'h_tablets': true, 'h_meditation': true, 'h_sleep': true },
+    '2026-10-09': { 'h_acv': true, 'h_hydration': true, 'h_exercise': true, 'h_reading': true, 'h_sleep': true },
+    '2026-10-10': { 'h_acv': true, 'h_hydration': true, 'h_tablets': true, 'h_exercise': true, 'h_meditation': true, 'h_reading': true, 'h_sleep': true },
+    '2026-10-11': { 'h_acv': true, 'h_hydration': true, 'h_meditation': true, 'h_reading': true, 'h_sleep': true },
+    '2026-10-12': { 'h_acv': true, 'h_hydration': true, 'h_tablets': true, 'h_exercise': true, 'h_meditation': true },
+    '2026-10-13': { 'h_acv': true, 'h_hydration': true, 'h_tablets': true, 'h_exercise': true, 'h_reading': true, 'h_sleep': true },
+    '2026-10-14': { 'h_acv': true, 'h_hydration': true, 'h_tablets': true, 'h_meditation': true, 'h_reading': true, 'h_sleep': true },
+    '2026-10-15': { 'h_acv': true, 'h_hydration': true, 'h_tablets': true, 'h_exercise': true, 'h_meditation': true, 'h_reading': true, 'h_sleep': true },
+    '2026-10-16': { 'h_acv': true, 'h_hydration': true, 'h_tablets': true }
+  };
+
+  let state = {
+    activeMonthIdx: 0, // 0 = Oct 26
+    activeDate: TODAY_STR,
+    activeWeekIdx: 1,  // Week 2 of Oct (Oct 14-20)
+    demoMode: false,
+    habits: [],
+    logs: {}
+  };
+
+  function loadState() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.habits && parsed.logs) {
+          state = Object.assign(state, parsed);
+        }
+      }
+    } catch (e) {
+      console.warn('Could not access localStorage:', e);
+    }
+  }
+
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {}
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // Format date helper YYYY-MM-DD
+  function makeDateStr(year, month, day) {
+    const mm = String(month).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    return `${year}-${mm}-${dd}`;
+  }
+
+  function parseDateStr(dateStr) {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function formatNiceDate(dateStr) {
+    const dt = parseDateStr(dateStr);
+    return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function formatLongDate(dateStr) {
+    const dt = parseDateStr(dateStr);
+    return dt.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  // Deterministic Daily Quote getter for any date from Oct 7, 2026 onward
+  function getQuoteForDate(dateStr) {
+    const start = new Date(2026, 9, 7); // Oct 7, 2026
+    const target = parseDateStr(dateStr);
+    const diffDays = Math.max(0, Math.round((target - start) / (1000 * 60 * 60 * 24)));
+    const q = QUOTES_LIBRARY[diffDays % QUOTES_LIBRARY.length];
+    return {
+      dayNumber: diffDays + 1,
+      text: q.text,
+      author: q.author,
+      focus: q.focus
+    };
+  }
+
+  // Apply Active Month's Color Theme
+  function applyMonthTheme() {
+    const m = MONTHS[state.activeMonthIdx];
+    const root = document.documentElement;
+    root.style.setProperty('--month-primary', m.primary);
+    root.style.setProperty('--month-secondary', m.secondary);
+    root.style.setProperty('--month-bg', m.bg);
+    root.style.setProperty('--month-card-tint', m.tint);
+    root.style.setProperty('--month-text-accent', m.accentText);
+    root.style.setProperty('--month-gradient', `linear-gradient(135deg, ${m.primary} 0%, ${m.secondary} 100%)`);
+    root.style.setProperty('--shadow-glow', `0 8px 20px -4px ${m.primary}55`);
+
+    document.getElementById('activeMonthBadge').textContent =
+      m.key === '2026-10' ? `${m.fullName} • ${m.themeName} (From Oct 7)` : `${m.fullName} • ${m.themeName}`;
+  }
+
+  // Render Month Switcher Pills
+  function renderMonthPills() {
+    const container = document.getElementById('monthPillsContainer');
+    container.innerHTML = MONTHS.map((m, idx) => {
+      const isActive = idx === state.activeMonthIdx;
+      const rate = Math.round(getMonthCompletionRate(idx));
+      return `
+        <button class="month-pill ${isActive ? 'active' : ''}"
+          onclick="selectMonth(${idx})"
+          style="background:${isActive ? m.primary : m.bg}; color:${isActive ? '#FFFFFF' : m.accentText}; border-color:${isActive ? m.primary : m.tint};">
+          <span class="m-name">${m.label}</span>
+          <span class="m-sub">${rate}% done</span>
+        </button>
+      `;
+    }).join('');
+  }
+
+  function selectMonth(idx) {
+    state.activeMonthIdx = idx;
+    const m = MONTHS[idx];
+    // If activeDate is not in this month, jump to startDay (or Today if Oct 2026)
+    if (!state.activeDate.startsWith(m.key)) {
+      state.activeDate = (m.key === '2026-10') ? TODAY_STR : makeDateStr(m.year, m.month, m.startDay);
+    }
+    state.activeWeekIdx = 0;
+    applyMonthTheme();
+    renderAll();
+  }
+
+  // Step active date forward or backward
+  function stepActiveDate(delta) {
+    const curr = parseDateStr(state.activeDate);
+    curr.setDate(curr.getDate() + delta);
+    const minDate = new Date(2026, 9, 7);
+    const maxDate = new Date(2027, 8, 30);
+    if (curr < minDate || curr > maxDate) return;
+
+    const newStr = makeDateStr(curr.getFullYear(), curr.getMonth() + 1, curr.getDate());
+    state.activeDate = newStr;
+    const mKey = newStr.slice(0, 7);
+    const mIdx = MONTHS.findIndex(m => m.key === mKey);
+    if (mIdx !== -1 && mIdx !== state.activeMonthIdx) {
+      state.activeMonthIdx = mIdx;
+      applyMonthTheme();
+    }
+    renderAll();
+  }
+
+  // Render Horizontal Date Ribbon for Active Month
+  function renderDateRibbon() {
+    const m = MONTHS[state.activeMonthIdx];
+    const container = document.getElementById('dateRibbonContainer');
+    const dowNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    let html = '';
+
+    for (let d = m.startDay; d <= m.endDay; d++) {
+      const dStr = makeDateStr(m.year, m.month, d);
+      const dt = parseDateStr(dStr);
+      const dow = dowNames[dt.getDay()];
+      const isSelected = dStr === state.activeDate;
+      const isToday = dStr === TODAY_STR;
+      const doneCount = getCompletedCountForDate(dStr);
+      const pct = state.habits.length ? Math.round((doneCount / state.habits.length) * 100) : 0;
+
+      html += `
+        <div class="day-chip ${isSelected ? 'active' : ''} ${isToday ? 'is-today' : ''}"
+             id="daychip-${dStr}"
+             onclick="selectDate('${dStr}')">
+          <div class="d-dow">${dow}</div>
+          <div class="d-num">${d}</div>
+          <div class="d-dot-bar">
+            <div class="d-dot-fill" style="width:${pct}%"></div>
+          </div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+  }
+
+  function selectDate(dStr) {
+    state.activeDate = dStr;
+    renderAll();
+  }
+
+  // Logging & Streak Calculations
+  function isHabitDone(habitId, dateStr) {
+    return !!(state.logs[dateStr] && state.logs[dateStr][habitId]);
+  }
+
+  function toggleHabit(habitId, dateStr) {
+    if (!state.logs[dateStr]) state.logs[dateStr] = {};
+    state.logs[dateStr][habitId] = !state.logs[dateStr][habitId];
+    saveState();
+    const done = state.logs[dateStr][habitId];
+    const h = state.habits.find(x => x.id === habitId);
+    showToast(done ? `✅ Completed: ${h ? h.name : 'Goal'}!` : `↩️ Unchecked: ${h ? h.name : 'Goal'}`);
+    renderAll();
+  }
+
+  function getCompletedCountForDate(dateStr) {
+    const dayLog = state.logs[dateStr] || {};
+    return state.habits.reduce((acc, h) => acc + (dayLog[h.id] ? 1 : 0), 0);
+  }
+
+  function getMonthCompletionRate(monthIdx) {
+    const m = MONTHS[monthIdx];
+    const totalDays = m.endDay - m.startDay + 1;
+    const totalPossible = totalDays * state.habits.length;
+    if (!totalPossible) return 0;
+    let completed = 0;
+    for (let d = m.startDay; d <= m.endDay; d++) {
+      const dStr = makeDateStr(m.year, m.month, d);
+      completed += getCompletedCountForDate(dStr);
+    }
+    return (completed / totalPossible) * 100;
+  }
+
+  function getHabitStatsInMonth(habitId, monthIdx) {
+    const m = MONTHS[monthIdx];
+    const totalDays = m.endDay - m.startDay + 1;
+    let totalDone = 0;
+    let currentStreak = 0;
+    let bestStreak = 0;
+    let tempStreak = 0;
+
+    // Limit current streak check up to activeDate if in current month, or endDay
+    for (let d = m.startDay; d <= m.endDay; d++) {
+      const dStr = makeDateStr(m.year, m.month, d);
+      const done = isHabitDone(habitId, dStr);
+      if (done) {
+        totalDone++;
+        tempStreak++;
+        if (tempStreak > bestStreak) bestStreak = tempStreak;
+      } else {
+        tempStreak = 0;
+      }
+    }
+
+    // Calculate active streak ending on activeDate (or latest completed day <= activeDate)
+    let checkDt = parseDateStr(state.activeDate);
+    if (!isHabitDone(habitId, state.activeDate)) {
+      const prevDt = new Date(checkDt);
+      prevDt.setDate(prevDt.getDate() - 1);
+      const prevStr = makeDateStr(prevDt.getFullYear(), prevDt.getMonth() + 1, prevDt.getDate());
+      if (isHabitDone(habitId, prevStr)) {
+        checkDt = prevDt;
+      }
+    }
+    const minDt = new Date(2026, 9, 7);
+    while (checkDt >= minDt) {
+      const s = makeDateStr(checkDt.getFullYear(), checkDt.getMonth() + 1, checkDt.getDate());
+      if (isHabitDone(habitId, s)) {
+        currentStreak++;
+        checkDt.setDate(checkDt.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+
+    return {
+      totalDone,
+      totalDays,
+      rate: totalDays ? Math.round((totalDone / totalDays) * 100) : 0,
+      currentStreak,
+      bestStreak: Math.max(bestStreak, currentStreak)
+    };
+  }
+
+  // Build Google Calendar Template URL for a Habit
+  function buildGoogleCalendarUrl(habit, dateStr) {
+    const [hh, mm] = (habit.reminderTime || '08:00').split(':').map(Number);
+    const startDt = parseDateStr(dateStr || '2026-10-07');
+    const y = startDt.getFullYear();
+    const m = String(startDt.getMonth() + 1).padStart(2, '0');
+    const d = String(startDt.getDate()).padStart(2, '0');
+    const startH = String(hh).padStart(2, '0');
+    const startM = String(mm).padStart(2, '0');
+
+    // 30 minute reminder block
+    let endMinTotal = hh * 60 + mm + 30;
+    const endH = String(Math.floor(endMinTotal / 60) % 24).padStart(2, '0');
+    const endM = String(endMinTotal % 60).padStart(2, '0');
+
+    const datesParam = `${y}${m}${d}T${startH}${startM}00/${y}${m}${d}T${endH}${endM}00`;
+    const quote = getQuoteForDate(dateStr || state.activeDate);
+    const title = encodeURIComponent(`${habit.icon} Habit Goal: ${habit.name} (${habit.target})`);
+    const details = encodeURIComponent(
+      `Daily Target: ${habit.target}\nCategory: ${habit.category}\n\nDaily Spark: "${quote.text}" — ${quote.author}\n\nLogged via Sunlit Streaks Habit Dashboard`
+    );
+    const recur = encodeURIComponent('RRULE:FREQ=DAILY');
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${datesParam}&ctz=Australia/Brisbane&details=${details}&recur=${recur}`;
+  }
+
+  // Render Header Quote & Top KPIs
+  function renderHeaderAndQuote() {
+    const q = getQuoteForDate(state.activeDate);
+    document.getElementById('quoteDateLabel').textContent = `💡 Daily Spark (Day #${q.dayNumber}) • ${formatNiceDate(state.activeDate)}`;
+    document.getElementById('dailyQuoteText').textContent = `"${q.text}"`;
+    document.getElementById('dailyQuoteAuthor').textContent = `— ${q.author}`;
+    document.getElementById('dailyQuotePrompt').textContent = `🌱 ${q.focus}`;
+
+    const doneToday = getCompletedCountForDate(state.activeDate);
+    const totalHabits = state.habits.length;
+    document.getElementById('kpiDoneToday').textContent = `${doneToday}/${totalHabits}`;
+
+    let maxStreak = 0;
+    state.habits.forEach(h => {
+      const st = getHabitStatsInMonth(h.id, state.activeMonthIdx);
+      if (st.bestStreak > maxStreak) maxStreak = st.bestStreak;
+    });
+    document.getElementById('kpiTopStreak').textContent = `${maxStreak} 🔥`;
+
+    const mRate = Math.round(getMonthCompletionRate(state.activeMonthIdx));
+    document.getElementById('kpiMonthRate').textContent = `${mRate}%`;
+    document.getElementById('kpiMonthLbl').textContent = `${MONTHS[state.activeMonthIdx].label} Rate`;
+  }
+
+  // Render Tab 1: Daily Habit Cards
+  function renderDailyHabits() {
+    const doneCount = getCompletedCountForDate(state.activeDate);
+    const total = state.habits.length;
+    const pct = total ? Math.round((doneCount / total) * 100) : 0;
+
+    document.getElementById('activeDayHeading').textContent = formatLongDate(state.activeDate);
+    document.getElementById('activeDaySubtext').textContent =
+      doneCount === total && total > 0
+        ? `🎉 Amazing! All ${total} daily goals completed for this day!`
+        : `${doneCount} of ${total} daily goals logged • Tap checkboxes to update`;
+
+    const radial = document.getElementById('dayRadial');
+    const deg = Math.round((pct / 100) * 360);
+    const m = MONTHS[state.activeMonthIdx];
+    radial.style.background = `conic-gradient(${m.primary} ${deg}deg, #E2E8F0 ${deg}deg)`;
+    document.getElementById('dayRadialText').textContent = `${pct}%`;
+
+    // Build 7-day mini window ending on activeDate (bounded to Oct 7, 2026+)
+    const activeDt = parseDateStr(state.activeDate);
+    const miniDates = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(activeDt);
+      d.setDate(d.getDate() - i);
+      if (d >= new Date(2026, 9, 7)) {
+        miniDates.push(makeDateStr(d.getFullYear(), d.getMonth() + 1, d.getDate()));
+      }
+    }
+
+    const container = document.getElementById('habitCardsContainer');
+    container.innerHTML = state.habits.map(h => {
+      const done = isHabitDone(h.id, state.activeDate);
+      const stats = getHabitStatsInMonth(h.id, state.activeMonthIdx);
+      const catClass = h.category.startsWith('Personal') ? 'cat-Personal' : (h.category.startsWith('Well') ? 'cat-Well-being' : 'cat-Health');
+      const gcalUrl = buildGoogleCalendarUrl(h, state.activeDate);
+
+      const miniDotsHtml = miniDates.map(dStr => {
+        const dayNum = Number(dStr.split('-')[2]);
+        const isD = isHabitDone(h.id, dStr);
+        const isCurr = dStr === state.activeDate;
+        return `<div class="mini-dot ${isD ? 'done' : ''} ${isCurr ? 'current' : ''}"
+                     onclick="toggleHabit('${h.id}', '${dStr}')"
+                     title="${dStr}">${dayNum}</div>`;
+      }).join('');
+
+      return `
+        <div class="habit-card ${done ? 'completed' : ''}">
+          <div class="habit-card-main">
+            <button class="check-btn" onclick="toggleHabit('${h.id}', '${state.activeDate}')" aria-label="Toggle ${h.name}">
+              ✓
+            </button>
+            <div class="habit-info">
+              <div class="habit-title-row">
+                <span style="font-size:1.05rem;">${h.icon || '✨'}</span>
+                <span class="habit-name">${h.name}</span>
+                <span class="cat-badge ${catClass}">${h.category}</span>
+              </div>
+              <div class="habit-sub-row">
+                <span>🎯 Goal: <strong>${h.target}</strong></span>
+                <span class="streak-pill">🔥 ${stats.currentStreak}d streak (Best: ${stats.bestStreak}d)</span>
+                <span>📈 ${stats.rate}% in ${MONTHS[state.activeMonthIdx].label}</span>
+              </div>
+            </div>
+          </div>
+          <div class="habit-card-footer">
+            <div class="mini-week-dots" title="Recent days quick-toggle">
+              <span style="font-size:0.66rem;font-weight:700;color:var(--text-muted);margin-right:3px;">Recent:</span>
+              ${miniDotsHtml}
+            </div>
+            <div class="habit-card-actions">
+              <button class="mini-action-btn" onclick="toggleEditHabit('${h.id}')" title="Edit habit">✏️ Edit</button>
+              <button class="mini-action-btn" onclick="deleteHabit('${h.id}')" title="Delete habit">🗑️</button>
+              <a href="${gcalUrl}" target="_blank" rel="noopener" class="cal-remind-btn">
+                📅 Remind (${h.reminderTime})
+              </a>
+            </div>
+          </div>
+          <div class="inline-edit-box" id="editbox-${h.id}">
+            <div class="form-row">
+              <input type="text" id="editname-${h.id}" class="form-input" value="${h.name.replace(/"/g, '&quot;')}" placeholder="Habit name" />
+              <input type="text" id="edittarget-${h.id}" class="form-input" value="${h.target.replace(/"/g, '&quot;')}" placeholder="Daily goal" />
+            </div>
+            <div class="form-row">
+              <select id="editcat-${h.id}" class="form-select">
+                <option value="Health" ${h.category === 'Health' ? 'selected' : ''}>Health</option>
+                <option value="Personal Growth" ${h.category === 'Personal Growth' ? 'selected' : ''}>Personal Growth</option>
+                <option value="Well-being" ${h.category === 'Well-being' ? 'selected' : ''}>Well-being</option>
+              </select>
+              <input type="time" id="edittime-${h.id}" class="form-input" value="${h.reminderTime}" />
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="primary-btn" style="padding:7px 12px;font-size:0.76rem;" onclick="saveHabitEdit('${h.id}')">💾 Save Changes</button>
+              <button class="cal-remind-btn" onclick="toggleEditHabit('${h.id}')">Cancel</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function toggleEditHabit(habitId) {
+    const box = document.getElementById('editbox-' + habitId);
+    if (box) box.classList.toggle('open');
+  }
+
+  function saveHabitEdit(habitId) {
+    const h = state.habits.find(x => x.id === habitId);
+    if (!h) return;
+    const nameEl = document.getElementById('editname-' + habitId);
+    const targetEl = document.getElementById('edittarget-' + habitId);
+    const catEl = document.getElementById('editcat-' + habitId);
+    const timeEl = document.getElementById('edittime-' + habitId);
+    if (nameEl && nameEl.value.trim()) h.name = nameEl.value.trim();
+    if (targetEl && targetEl.value.trim()) h.target = targetEl.value.trim();
+    if (catEl && catEl.value) h.category = catEl.value;
+    if (timeEl && timeEl.value) h.reminderTime = timeEl.value;
+    saveState();
+    showToast(`✅ Updated "${h.name}"!`);
+    renderAll();
+  }
+
+  function deleteHabit(habitId) {
+    const idx = state.habits.findIndex(x => x.id === habitId);
+    if (idx === -1) return;
+    const removed = state.habits.splice(idx, 1)[0];
+    saveState();
+    showToast(`🗑️ Removed "${removed.name}"`);
+    renderAll();
+  }
+
+  function clearAllLogsOnly() {
+    state.logs = {};
+    state.demoMode = false;
+    saveState();
+    showToast('🧹 Cleared all sample check-ins! Ready for your own logs.');
+    renderAll();
+  }
+
+  function clearAllHabitsAndLogs() {
+    state.habits = [];
+    state.logs = {};
+    state.demoMode = false;
+    saveState();
+    showToast('✨ Cleared all default habits! Add your own below.');
+    renderAll();
+  }
+
+  // Add New Habit
+  function addNewHabit() {
+    const nameEl = document.getElementById('newHabitName');
+    const targetEl = document.getElementById('newHabitTarget');
+    const catEl = document.getElementById('newHabitCat');
+    const timeEl = document.getElementById('newHabitTime');
+
+    const name = nameEl.value.trim();
+    if (!name) {
+      showToast('Please enter a habit name first!');
+      return;
+    }
+    const target = targetEl.value.trim() || 'Daily completion';
+    const category = catEl.value;
+    const reminderTime = timeEl.value || '08:00';
+
+    state.habits.push({
+      id: 'h_' + Date.now(),
+      name,
+      category,
+      target,
+      icon: category === 'Health' ? '🌿' : (category === 'Personal Growth' ? '🚀' : '🌸'),
+      reminderTime
+    });
+    nameEl.value = '';
+    targetEl.value = '';
+    saveState();
+    showToast(`Added "${name}" to your daily tracker!`);
+    renderAll();
+  }
+
+  // Render Tab 2: Monthly Color-Coded Habit Grid
+  function renderMonthlyMatrix() {
+    const m = MONTHS[state.activeMonthIdx];
+    document.getElementById('gridMonthTitle').textContent =
+      `${m.fullName} Habit Matrix (Days ${m.startDay}–${m.endDay})`;
+
+    const table = document.getElementById('monthlyMatrixTable');
+    let headHtml = `<thead><tr><th class="sticky-col">Habit / Day</th>`;
+    for (let d = m.startDay; d <= m.endDay; d++) {
+      const dStr = makeDateStr(m.year, m.month, d);
+      const isCurr = dStr === state.activeDate;
+      headHtml += `<th style="${isCurr ? `background:${m.primary};color:#fff;` : ''}">${d}</th>`;
+    }
+    headHtml += `<th>Total</th><th>Rate</th></tr></thead>`;
+
+    let bodyHtml = '<tbody>';
+    state.habits.forEach(h => {
+      const st = getHabitStatsInMonth(h.id, state.activeMonthIdx);
+      bodyHtml += `<tr><td class="sticky-col" title="${h.name} (${h.target})">${h.icon} ${h.name}</td>`;
+      for (let d = m.startDay; d <= m.endDay; d++) {
+        const dStr = makeDateStr(m.year, m.month, d);
+        const done = isHabitDone(h.id, dStr);
+        bodyHtml += `
+          <td>
+            <div class="matrix-cell ${done ? 'done' : ''}"
+                 onclick="toggleHabit('${h.id}', '${dStr}')">✓</div>
+          </td>
+        `;
+      }
+      bodyHtml += `<td style="font-weight:800;">${st.totalDone}</td><td style="font-weight:800;color:var(--month-text-accent);">${st.rate}%</td></tr>`;
+    });
+    bodyHtml += '</tbody>';
+    table.innerHTML = headHtml + bodyHtml;
+  }
+
+  // Render Tab 3: Weekly & Monthly Streak Charts & Graphs
+  function getWeeksForMonth(monthIdx) {
+    const m = MONTHS[monthIdx];
+    const weeks = [];
+    let wStart = m.startDay;
+    let wNum = 1;
+    while (wStart <= m.endDay) {
+      const wEnd = Math.min(wStart + 6, m.endDay);
+      weeks.push({
+        label: `Week ${wNum} (${m.label.split(' ')[0]} ${wStart}–${wEnd})`,
+        shortLabel: `Wk ${wNum} (${wStart}–${wEnd})`,
+        startDay: wStart,
+        endDay: wEnd
+      });
+      wStart = wEnd + 1;
+      wNum++;
+    }
+    return weeks;
+  }
+
+  function selectWeek(wIdx) {
+    state.activeWeekIdx = wIdx;
+    renderCharts();
+  }
+
+  function renderCharts() {
+    const m = MONTHS[state.activeMonthIdx];
+    const weeks = getWeeksForMonth(state.activeMonthIdx);
+    if (state.activeWeekIdx >= weeks.length) state.activeWeekIdx = 0;
+
+    // 1. Week Selector Buttons
+    document.getElementById('weekSelectorBtns').innerHTML = weeks.map((w, idx) => `
+      <button class="week-tab-btn ${idx === state.activeWeekIdx ? 'active' : ''}"
+              onclick="selectWeek(${idx})">${w.shortLabel}</button>
+    `).join('');
+
+    // 2. Weekly Bar Chart SVG
+    const activeW = weeks[state.activeWeekIdx];
+    const daysInW = [];
+    for (let d = activeW.startDay; d <= activeW.endDay; d++) {
+      const dStr = makeDateStr(m.year, m.month, d);
+      const count = getCompletedCountForDate(dStr);
+      const dt = parseDateStr(dStr);
+      const dow = dt.toLocaleDateString('en-US', { weekday: 'short' });
+      daysInW.push({ day: d, dow, count, total: state.habits.length, dStr });
+    }
+
+    const svgW = 400, svgH = 175, padL = 30, padR = 14, padT = 22, padB = 36;
+    const plotW = svgW - padL - padR;
+    const plotH = svgH - padT - padB;
+    const maxVal = Math.max(state.habits.length, 1);
+    const colW = plotW / daysInW.length;
+
+    let barsSvg = '';
+    daysInW.forEach((item, i) => {
+      const barH = (item.count / maxVal) * plotH;
+      const x = padL + i * colW + colW * 0.2;
+      const bw = colW * 0.6;
+      const y = padT + (plotH - barH);
+      const pct = Math.round((item.count / maxVal) * 100);
+      barsSvg += `
+        <g onclick="selectDate('${item.dStr}')" style="cursor:pointer;">
+          <rect x="${x}" y="${padT}" width="${bw}" height="${plotH}" rx="7" fill="#F1F5F9" />
+          <rect x="${x}" y="${y}" width="${bw}" height="${Math.max(barH, 4)}" rx="7" fill="${m.primary}" />
+          <text x="${x + bw / 2}" y="${y - 5}" text-anchor="middle" font-size="10" font-weight="800" fill="${m.accentText}">${item.count}/${item.total}</text>
+          <text x="${x + bw / 2}" y="${svgH - 18}" text-anchor="middle" font-size="10" font-weight="700" fill="#334155">${item.dow}</text>
+          <text x="${x + bw / 2}" y="${svgH - 6}" text-anchor="middle" font-size="9" font-weight="600" fill="#64748B">${m.label.split(' ')[0]} ${item.day}</text>
+        </g>
+      `;
+    });
+
+    document.getElementById('weeklyBarChartWrap').innerHTML = `
+      <svg viewBox="0 0 ${svgW} ${svgH}" class="chart-svg">
+        <line x1="${padL}" y1="${padT}" x2="${svgW - padR}" y2="${padT}" stroke="#E2E8F0" stroke-dasharray="3,3" />
+        <line x1="${padL}" y1="${padT + plotH / 2}" x2="${svgW - padR}" y2="${padT + plotH / 2}" stroke="#E2E8F0" stroke-dasharray="3,3" />
+        <line x1="${padL}" y1="${padT + plotH}" x2="${svgW - padR}" y2="${padT + plotH}" stroke="#CBD5E1" />
+        <text x="4" y="${padT + 4}" font-size="9" font-weight="700" fill="#64748B">100%</text>
+        <text x="4" y="${padT + plotH / 2 + 3}" font-size="9" font-weight="700" fill="#64748B">50%</text>
+        <text x="10" y="${padT + plotH + 3}" font-size="9" font-weight="700" fill="#64748B">0%</text>
+        ${barsSvg}
+      </svg>
+    `;
+
+    // 3. Monthly Daily Consistency Line/Area Curve SVG
+    document.getElementById('monthlyTrendTitle').textContent = `🌊 ${m.fullName} Daily Consistency Curve`;
+    const totalDays = m.endDay - m.startDay + 1;
+    const pts = [];
+    for (let d = m.startDay; d <= m.endDay; d++) {
+      const dStr = makeDateStr(m.year, m.month, d);
+      const c = getCompletedCountForDate(dStr);
+      const pct = state.habits.length ? (c / state.habits.length) * 100 : 0;
+      const idx = d - m.startDay;
+      const x = padL + (idx / Math.max(totalDays - 1, 1)) * plotW;
+      const y = padT + plotH - (pct / 100) * plotH;
+      pts.push({ d, x, y, pct: Math.round(pct) });
+    }
+
+    const lineCoords = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    const areaCoords = `${pts[0].x.toFixed(1)},${padT + plotH} ` + lineCoords + ` ${pts[pts.length - 1].x.toFixed(1)},${padT + plotH}`;
+    const circlesSvg = pts.map((p, i) => `
+      <circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${p.pct > 0 ? 3.5 : 2}" fill="${p.pct > 0 ? m.primary : '#CBD5E1'}" />
+      ${(i % 4 === 0 || i === pts.length - 1) ? `<text x="${p.x.toFixed(1)}" y="${svgH - 10}" text-anchor="middle" font-size="9" font-weight="700" fill="#64748B">${p.d}</text>` : ''}
+    `).join('');
+
+    document.getElementById('monthlyTrendChartWrap').innerHTML = `
+      <svg viewBox="0 0 ${svgW} ${svgH}" class="chart-svg">
+        <defs>
+          <linearGradient id="monthAreaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${m.primary}" stop-opacity="0.42"/>
+            <stop offset="100%" stop-color="${m.primary}" stop-opacity="0.03"/>
+          </linearGradient>
+        </defs>
+        <line x1="${padL}" y1="${padT}" x2="${svgW - padR}" y2="${padT}" stroke="#E2E8F0" stroke-dasharray="3,3" />
+        <line x1="${padL}" y1="${padT + plotH / 2}" x2="${svgW - padR}" y2="${padT + plotH / 2}" stroke="#E2E8F0" stroke-dasharray="3,3" />
+        <line x1="${padL}" y1="${padT + plotH}" x2="${svgW - padR}" y2="${padT + plotH}" stroke="#CBD5E1" />
+        <text x="4" y="${padT + 4}" font-size="9" font-weight="700" fill="#64748B">100%</text>
+        <text x="4" y="${padT + plotH / 2 + 3}" font-size="9" font-weight="700" fill="#64748B">50%</text>
+        <text x="10" y="${padT + plotH + 3}" font-size="9" font-weight="700" fill="#64748B">0%</text>
+        <polygon points="${areaCoords}" fill="url(#monthAreaGrad)" />
+        <polyline fill="none" stroke="${m.primary}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" points="${lineCoords}" />
+        ${circlesSvg}
+      </svg>
+    `;
+
+    // 4. Habit Streak Leaderboard
+    document.getElementById('streakLeaderboardWrap').innerHTML = state.habits.map(h => {
+      const st = getHabitStatsInMonth(h.id, state.activeMonthIdx);
+      return `
+        <div class="streak-leader-row">
+          <div class="streak-leader-top">
+            <span>${h.icon} ${h.name}</span>
+            <span style="color:var(--month-text-accent);">🔥 ${st.currentStreak}d cur • 🏆 ${st.bestStreak}d best • ${st.rate}% (${st.totalDone}/${st.totalDays}d)</span>
+          </div>
+          <div class="streak-bar-track">
+            <div class="streak-bar-fill" style="width:${Math.max(st.rate, 3)}%"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // 5. 12-Month Color-Coded Overview Bar Graph
+    const mColW = plotW / MONTHS.length;
+    const annualBars = MONTHS.map((mo, idx) => {
+      const rate = Math.round(getMonthCompletionRate(idx));
+      const bh = (rate / 100) * plotH;
+      const x = padL + idx * mColW + mColW * 0.15;
+      const bw = mColW * 0.7;
+      const y = padT + (plotH - bh);
+      return `
+        <g onclick="selectMonth(${idx})" style="cursor:pointer;">
+          <rect x="${x}" y="${padT}" width="${bw}" height="${plotH}" rx="5" fill="${mo.bg}" />
+          <rect x="${x}" y="${y}" width="${bw}" height="${Math.max(bh, 4)}" rx="5" fill="${mo.primary}" />
+          <text x="${x + bw / 2}" y="${y - 4}" text-anchor="middle" font-size="8.5" font-weight="800" fill="${mo.accentText}">${rate}%</text>
+          <text x="${x + bw / 2}" y="${svgH - 12}" text-anchor="middle" font-size="8.5" font-weight="800" fill="${idx === state.activeMonthIdx ? mo.accentText : '#475569'}">${mo.label.split(' ')[0]}</text>
+        </g>
+      `;
+    }).join('');
+
+    document.getElementById('annualOverviewChartWrap').innerHTML = `
+      <svg viewBox="0 0 ${svgW} ${svgH}" class="chart-svg">
+        <line x1="${padL}" y1="${padT}" x2="${svgW - padR}" y2="${padT}" stroke="#E2E8F0" stroke-dasharray="3,3" />
+        <line x1="${padL}" y1="${padT + plotH / 2}" x2="${svgW - padR}" y2="${padT + plotH / 2}" stroke="#E2E8F0" stroke-dasharray="3,3" />
+        <line x1="${padL}" y1="${padT + plotH}" x2="${svgW - padR}" y2="${padT + plotH}" stroke="#CBD5E1" />
+        <text x="4" y="${padT + 4}" font-size="9" font-weight="700" fill="#64748B">100%</text>
+        <text x="4" y="${padT + plotH / 2 + 3}" font-size="9" font-weight="700" fill="#64748B">50%</text>
+        <text x="10" y="${padT + plotH + 3}" font-size="9" font-weight="700" fill="#64748B">0%</text>
+        ${annualBars}
+      </svg>
+    `;
+  }
+
+  // Render Tab 4: Google Calendar Reminders Integration
+  function updateReminderTime(habitId, newTime) {
+    const h = state.habits.find(x => x.id === habitId);
+    if (h) {
+      h.reminderTime = newTime;
+      saveState();
+      showToast(`⏰ Updated ${h.name} reminder to ${newTime}`);
+      renderAll();
+    }
+  }
+
+  function renderReminders() {
+    const container = document.getElementById('remindersListContainer');
+    container.innerHTML = state.habits.map(h => {
+      const gcalUrl = buildGoogleCalendarUrl(h, '2026-10-07');
+      return `
+        <div class="reminder-row-card">
+          <div class="reminder-top">
+            <div>
+              <div style="font-weight:800;font-size:0.92rem;">${h.icon} ${h.name}</div>
+              <div style="font-size:0.74rem;color:var(--text-muted);font-weight:600;">Target: ${h.target} • ${h.category}</div>
+            </div>
+            <input type="time" class="time-input" value="${h.reminderTime}"
+                   onchange="updateReminderTime('${h.id}', this.value)" />
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:0.72rem;color:var(--text-muted);font-weight:600;">Repeats Daily • Australia/Brisbane</span>
+            <a href="${gcalUrl}" target="_blank" rel="noopener" class="gcal-action-link">
+              📅 Add Daily Google Calendar Reminder ↗
+            </a>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Generate & Download .ICS Calendar File with VALARM reminders starting Oct 7, 2026
+  function downloadAllRemindersICS() {
+    let icsLines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Sunlit Streaks Habit Tracker//EN',
+      'CALSCALE:GREGORIAN',
+      'X-WR-TIMEZONE:Australia/Brisbane'
+    ];
+
+    state.habits.forEach(h => {
+      const [hh, mm] = (h.reminderTime || '08:00').split(':').map(Number);
+      const startH = String(hh).padStart(2, '0');
+      const startM = String(mm).padStart(2, '0');
+      let endMin = hh * 60 + mm + 20;
+      const endH = String(Math.floor(endMin / 60) % 24).padStart(2, '0');
+      const endM = String(endMin % 60).padStart(2, '0');
+
+      icsLines.push(
+        'BEGIN:VEVENT',
+        `UID:${h.id}-oct2026@sunlitstreaks.local`,
+        'DTSTAMP:20261007T000000Z',
+        `DTSTART;TZID=Australia/Brisbane:20261007T${startH}${startM}00`,
+        `DTEND;TZID=Australia/Brisbane:20261007T${endH}${endM}00`,
+        'RRULE:FREQ=DAILY',
+        `SUMMARY:${h.icon} ${h.name} (${h.target})`,
+        `DESCRIPTION:Daily Habit Goal: ${h.target} (${h.category})`,
+        'BEGIN:VALARM',
+        'TRIGGER:-PT10M',
+        'ACTION:DISPLAY',
+        `DESCRIPTION:Reminder: ${h.name} (${h.target})`,
+        'END:VALARM',
+        'END:VEVENT'
+      );
+    });
+
+    icsLines.push('END:VCALENDAR');
+    const blob = new Blob([icsLines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'habit_tracker_reminders_oct2026.ics';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('📥 Downloaded Google Calendar .ICS pack!');
+  }
+
+  function requestBrowserNotifications() {
+    if (!('Notification' in window)) {
+      showToast('🔔 In-app banner reminders enabled!');
+      return;
+    }
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        new Notification('☀️ Sunlit Streaks Reminders Active!', {
+          body: 'Your daily habit reminders are set for Australia/Brisbane time.'
+        });
+        showToast('🔔 Browser notifications enabled!');
+      } else {
+        showToast('🔔 Use the Google Calendar buttons below to add mobile alerts!');
+      }
+    });
+  }
+
+  // Render Tab 5: Daily Motivational Quotes Feed for Active Month
+  function renderQuotesFeed() {
+    const m = MONTHS[state.activeMonthIdx];
+    document.getElementById('quotesMonthHeader').textContent =
+      `💬 Daily Motivational Quotes — ${m.fullName} (Days ${m.startDay}–${m.endDay})`;
+
+    const container = document.getElementById('quotesFeedContainer');
+    let html = '';
+    for (let d = m.startDay; d <= m.endDay; d++) {
+      const dStr = makeDateStr(m.year, m.month, d);
+      const q = getQuoteForDate(dStr);
+      const isSelected = dStr === state.activeDate;
+      html += `
+        <div class="quote-feed-item" style="${isSelected ? `background:${m.bg};border-left-width:6px;` : ''}"
+             onclick="selectDate('${dStr}')">
+          <div class="quote-feed-date">
+            <span>${formatNiceDate(dStr)} ${dStr === TODAY_STR ? '• 🌟 TODAY' : ''}</span>
+            <span>Day #${q.dayNumber}</span>
+          </div>
+          <div class="quote-feed-text">"${q.text}"</div>
+          <div class="quote-feed-author">— ${q.author} • <span style="color:var(--month-text-accent);">🌱 ${q.focus}</span></div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+  }
+
+  // Toggle Multi-Month Demo Streak Data or Reset to Default Oct 7–16 Progress
+  function toggleDemoData() {
+    state.demoMode = !state.demoMode;
+    const btn = document.getElementById('demoBtn');
+    if (state.demoMode) {
+      btn.textContent = '🔄 Reset Streaks';
+      const demoLogs = JSON.parse(JSON.stringify(DEFAULT_LOGS));
+      for (let d = 17; d <= 31; d++) {
+        const dStr = makeDateStr(2026, 10, d);
+        demoLogs[dStr] = {
+          'h_acv': true,
+          'h_hydration': d % 4 !== 0,
+          'h_tablets': d % 2 === 0,
+          'h_exercise': d % 3 !== 0,
+          'h_meditation': true,
+          'h_reading': d % 2 === 1,
+          'h_sleep': d % 3 !== 1
+        };
+      }
+      for (let d = 1; d <= 20; d++) {
+        demoLogs[makeDateStr(2026, 11, d)] = {
+          'h_acv': true, 'h_hydration': true, 'h_tablets': d % 2 === 0, 'h_meditation': true, 'h_sleep': true
+        };
+      }
+      for (let d = 1; d <= 15; d++) {
+        demoLogs[makeDateStr(2026, 12, d)] = {
+          'h_acv': true, 'h_hydration': true, 'h_exercise': true, 'h_reading': true
+        };
+      }
+      state.logs = demoLogs;
+      showToast('✨ Loaded multi-month streak preview across Oct, Nov & Dec!');
+    } else {
+      btn.textContent = '✨ Demo Streaks';
+      state.logs = JSON.parse(JSON.stringify(DEFAULT_LOGS));
+      showToast('↩️ Reset to default Oct 7–16 habit logs!');
+    }
+    saveState();
+    renderAll();
+  }
+
+  function exportProgressCSV() {
+    const m = MONTHS[state.activeMonthIdx];
+    const days = [];
+    for (let d = m.startDay; d <= m.endDay; d++) days.push(d);
+    let csv = 'Habit Name,Category,Daily Goal,' + days.join(',') + ',Total Completed,Completion Rate %\n';
+    state.habits.forEach(h => {
+      const st = getHabitStatsInMonth(h.id, state.activeMonthIdx);
+      const rowDays = days.map(d => isHabitDone(h.id, makeDateStr(m.year, m.month, d)) ? '1' : '0');
+      csv += `"${h.name}","${h.category}","${h.target}",` + rowDays.join(',') + `,${st.totalDone},${st.rate}%\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sunlit_streaks_${m.key}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast(`📥 Exported ${m.fullName} CSV report!`);
+  }
+
+  function openCustomCalendarReminder() {
+    const titleEl = document.getElementById('customCalTitle');
+    const timeEl = document.getElementById('customCalTime');
+    const recurEl = document.getElementById('customCalRecur');
+    const title = (titleEl && titleEl.value.trim()) || 'Daily Habit Check-In';
+    const timeVal = (timeEl && timeEl.value) || '09:00';
+    const recurVal = (recurEl && recurEl.value) || 'DAILY';
+    const fakeHabit = {
+      icon: '🌟',
+      name: title,
+      target: 'Custom Dashboard Reminder',
+      category: 'Personal Growth',
+      reminderTime: timeVal
+    };
+    let url = buildGoogleCalendarUrl(fakeHabit, state.activeDate);
+    if (recurVal === 'WEEKLY') {
+      url = url.replace(encodeURIComponent('RRULE:FREQ=DAILY'), encodeURIComponent('RRULE:FREQ=WEEKLY'));
+    } else if (recurVal === 'ONCE') {
+      url = url.replace('&recur=' + encodeURIComponent('RRULE:FREQ=DAILY'), '');
+    }
+    window.open(url, '_blank', 'noopener');
+    showToast('📅 Opened custom Google Calendar reminder!');
+  }
+
+  function toggleWideMode() {
+    const shell = document.getElementById('appShell');
+    shell.classList.toggle('wide-mode');
+  }
+
+  function switchView(viewName, btnEl) {
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+    const target = document.getElementById('view-' + viewName);
+    if (target) target.classList.add('active');
+
+    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+    if (btnEl) btnEl.classList.add('active');
+    renderAll();
+  }
+
+  function renderAll() {
+    renderHeaderAndQuote();
+    renderMonthPills();
+    renderDateRibbon();
+    renderDailyHabits();
+    renderMonthlyMatrix();
+    renderCharts();
+    renderReminders();
+    renderQuotesFeed();
+  }
+
+  // Initialize App
+  loadState();
+  applyMonthTheme();
+  renderAll();
+  if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(console.warn));
+</script>
+</body>
+</html>
