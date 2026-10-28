@@ -1,0 +1,125 @@
+name: Update Word of the Day
+
+on:
+  schedule:
+    # 4:00 AM UTC = midnight US Eastern (when Merriam-Webster posts the new word)
+    - cron: '0 4 * * *'
+  workflow_dispatch:  # allow manual trigger for testing
+
+permissions:
+  contents: write
+
+jobs:
+  fetch-word:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch Merriam-Webster Word of the Day RSS
+        run: |
+          python3 << 'PY'
+          import xml.etree.ElementTree as ET
+          import json
+          import re
+          import html
+          from datetime import datetime, timezone
+          from email.utils import parsedate_to_datetime
+          import urllib.request
+
+          url = 'https://www.merriam-webster.com/wotd/feed/rss2'
+          req = urllib.request.Request(url, headers={'User-Agent': 'SunlitStreaks/1.0'})
+          try:
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  raw = resp.read()
+          except Exception as e:
+              print(f'ERROR fetching RSS: {e}')
+              raise SystemExit(1)
+
+          # Strip namespaces for easier parsing
+          text = raw.decode('utf-8', errors='replace')
+          text = re.sub(r' xmlns="[^"]+"', '', text)
+          root = ET.fromstring(text)
+
+          item = root.find('.//item')
+          if item is None:
+              print('ERROR: no item found in RSS')
+              raise SystemExit(1)
+
+          def txt(tag):
+              el = item.find(tag)
+              return (el.text or '').strip() if el is not None else ''
+
+          title = txt('title')          # e.g. "Word of the Day: ephemeral"
+          word = title.replace('Word of the Day:', '').strip()
+          pub_date = txt('pubDate')
+          description = txt('description')  # HTML blob with all sections
+
+          # Unescape HTML entities
+          desc = html.unescape(description)
+
+          def section(label):
+              # Merriam-Webster RSS wraps sections in <p><strong>Label:</strong> ...</p>
+              m = re.search(rf'<strong>\s*{re.escape(label)}\s*:?</strong>\s*(.*?)(?=<strong>|<p><strong>|$)', desc, re.I | re.S)
+              if not m:
+                  return ''
+              chunk = m.group(1)
+              chunk = re.sub(r'<[^>]+>', ' ', chunk)
+              chunk = re.sub(r'\s+', ' ', chunk).strip()
+              return chunk
+
+          pronunciation = section('What It Is')
+          # pronunciation often includes phonetic + audio link; keep text only
+          pronunciation = re.sub(r'Listen to the pronunciation of \w+', '', pronunciation).strip(' -\u2014')
+
+          part_of_speech = ''
+          m = re.search(r'<strong>\s*What It Is\s*:?</strong>\s*[^<]*?\(([^)]+)\)', desc, re.I)
+          if m:
+              part_of_speech = m.group(1).strip()
+
+          definition = section('What It Means')
+          example = section('Examples of')
+          did_you_know = section('Did You Know')
+
+          # Date the word is for (UTC date of pubDate, or today UTC)
+          try:
+              dt = parsedate_to_datetime(pub_date)
+              word_date = dt.astimezone(timezone.utc).strftime('%Y-%m-%d')
+          except Exception:
+              word_date = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+
+          data = {
+              'date': word_date,
+              'word': word,
+              'pronunciation': pronunciation,
+              'part_of_speech': part_of_speech,
+              'definition': definition,
+              'example': example,
+              'did_you_know': did_you_know,
+              'source_url': f'https://www.merriam-webster.com/word-of-the-day/{word.lower()}',
+              'fetched_at': datetime.now(timezone.utc).isoformat()
+          }
+
+          with open('data/word-of-day.json', 'w', encoding='utf-8') as f:
+              json.dump(data, f, ensure_ascii=False, indent=2)
+              f.write('\n')
+
+          print(json.dumps(data, ensure_ascii=False, indent=2)[:1500])
+          PY
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/word-of-day.json
+          if git diff --staged --quiet; then
+            echo "No changes to word-of-day.json"
+          else
+            git commit -m "chore: update word of the day for $(date -u +%Y-%m-%d)"
+            git push
+          fi
