@@ -1,0 +1,94 @@
+name: Word of the Day
+
+on:
+  schedule:
+    # 4 AM UTC = midnight US Eastern (when Merriam-Webster posts)
+    - cron: '0 4 * * *'
+  workflow_dispatch: # allow manual trigger
+
+jobs:
+  fetch-word:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch Merriam-Webster RSS
+        run: |
+          python3 << 'PY'
+          import urllib.request, xml.etree.ElementTree as ET, json, re, html
+
+          url = 'https://www.merriam-webster.com/wotd/feed/rss2'
+          req = urllib.request.Request(url, headers={'User-Agent': 'SunlitStreaks/1.0'})
+          with urllib.request.urlopen(req, timeout=30) as resp:
+              tree = ET.parse(resp)
+          root = tree.getroot()
+          item = root.find('.//item')
+          if item is None:
+              raise SystemExit('No item found in RSS feed')
+
+          def text(tag):
+              el = item.find(tag)
+              return (el.text or '').strip() if el is not None else ''
+
+          title = text('title')
+          link = text('link')
+          pubdate = text('pubDate')
+          desc_html = text('description')
+
+          # Strip HTML tags from description
+          desc = re.sub(r'<[^>]+>', ' ', desc_html)
+          desc = html.escape(re.sub(r'\s+', ' ', desc)).strip()
+
+          # Try to split into word / pronunciation / part of speech / definition
+          word = title.split(':', 1)[0].strip() if title else ''
+          rest = title.split(':', 1)[1].strip() if ':' in title else ''
+
+          # Merriam-Webster titles look like: "Word: pronunciation (part of speech)"
+          pron = ''
+          pos = ''
+          m = re.match(r'^(.*?)\s*\(([^)]+)\)\s*$', rest)
+          if m:
+              pron = m.group(1).strip()
+              pos = m.group(2).strip()
+          else:
+              pron = rest
+
+          # Description often starts with "What It Means: ... Did you know: ..."
+          definition = ''
+          did_you_know = ''
+          dyk = re.search(r'Did you know[:\s]*(.*)', desc, re.I)
+          if dyk:
+              did_you_know = dyk.group(1).strip()
+              definition = desc[:dyk.start()].strip()
+          else:
+              definition = desc
+
+          # Remove leading "What It Means:" label if present
+          definition = re.sub(r'^What It Means:\s*', '', definition, flags=re.I).strip()
+
+          data = {
+              'word': word,
+              'pronunciation': pron,
+              'part_of_speech': pos,
+              'definition': definition,
+              'did_you_know': did_you_know,
+              'link': link,
+              'pub_date': pubdate,
+              'fetched_at': __import__('datetime').datetime.utcnow().isoformat() + 'Z'
+          }
+
+          with open('data/word-of-day.json', 'w') as f:
+              json.dump(data, f, indent=2)
+              f.write('\n')
+          print(json.dumps(data, indent=2))
+          PY
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/word-of-day.json
+          git diff --staged --quiet && echo "No changes" && exit 0
+          git commit -m "chore: update word of the day [skip ci]"
+          git push
