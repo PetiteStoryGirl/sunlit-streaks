@@ -114,20 +114,19 @@
         const data = await res.json();
 
         const word = data.word || 'Unknown';
-        const pos = data.part_of_speech ? `<em>${escapeHtml(data.part_of_speech)}</em>` : '';
+        const pos = data.part_of_speech ? '<em>' + escapeHtml(data.part_of_speech) + '</em>' : '';
         const pron = data.pronunciation ? escapeHtml(data.pronunciation) : '';
         const def = escapeHtml(data.definition || '');
         const dyk = data.did_you_know ? escapeHtml(data.did_you_know) : '';
         const link = data.link || data.source_url || '#';
 
         el.className = 'card';
-        el.innerHTML = `
-          <h2 class="word">${escapeHtml(word)}</h2>
-          <p class="meta">${pron} ${pos}</p>
-          <p class="definition">${def}</p>
-          ${dyk ? `<p class="did-you-know">${dyk}</p>` : ''}
-          <a class="source" href="${escapeHtml(link)}" target="_blank" rel="noopener">Merriam-Webster →</a>
-        `;
+        el.innerHTML =
+          '<h2 class="word">' + escapeHtml(word) + '</h2>' +
+          '<p class="meta">' + pron + ' ' + pos + '</p>' +
+          '<p class="definition">' + def + '</p>' +
+          (dyk ? '<p class="did-you-know">' + dyk + '</p>' : '') +
+          '<a class="source" href="' + escapeHtml(link) + '" target="_blank" rel="noopener">Merriam-Webster →</a>';
       } catch (err) {
         el.className = 'error';
         el.textContent = 'Could not load the word of the day. Pull to refresh or try again later.';
