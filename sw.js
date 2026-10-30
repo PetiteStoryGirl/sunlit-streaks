@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sunlit-streaks-v4';
+const CACHE_NAME = 'sunlit-streaks-v5';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
@@ -15,7 +15,6 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  // Always try the network first for HTML and JSON so updates show immediately
   const url = new URL(event.request.url);
   const isCritical = url.pathname.endsWith('/') ||
                      url.pathname.endsWith('.html') ||
