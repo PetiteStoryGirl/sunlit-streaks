@@ -6,17 +6,21 @@ on:
     - cron: '0 4 * * *'
   workflow_dispatch: # allow manual trigger
 
+permissions:
+  contents: write
+
 jobs:
   fetch-word:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Fetch Merriam-Webster RSS
         run: |
           python3 << 'PY'
           import urllib.request, xml.etree.ElementTree as ET, json, re, html
+          from datetime import datetime, timezone
 
           url = 'https://www.merriam-webster.com/wotd/feed/rss2'
           req = urllib.request.Request(url, headers={'User-Agent': 'SunlitStreaks/1.0'})
@@ -75,7 +79,7 @@ jobs:
               'did_you_know': did_you_know,
               'link': link,
               'pub_date': pubdate,
-              'fetched_at': __import__('datetime').datetime.utcnow().isoformat() + 'Z'
+              'fetched_at': datetime.now(timezone.utc).isoformat()
           }
 
           with open('data/word-of-day.json', 'w') as f:
