@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sunlit-streaks-v2';
+const CACHE_NAME = 'sunlit-streaks-v3';
 const PRECACHE = [
   './',
   './index.html',
@@ -28,7 +28,7 @@ self.addEventListener('fetch', (event) => {
       if (cached) return cached;
       return fetch(event.request).then((response) => {
         if (!response || response.status !== 200 || response.type !== 'basic') return response;
-        const clone = response clone();
+        const clone = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         return response;
       }).catch(() => cached);
