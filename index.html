@@ -82,11 +82,6 @@
       font-weight: 600;
       font-size: 0.9rem;
     }
-    .loading, .error {
-      text-align: center;
-      color: var(--muted);
-      padding: 3rem 1rem;
-    }
     footer {
       text-align: center;
       padding: 1rem;
@@ -101,7 +96,13 @@
     <p>Word of the Day</p>
   </header>
   <main>
-    <div id="content" class="loading">Loading…</div>
+    <div id="content" class="card">
+      <h2 class="word">reticent</h2>
+      <p class="meta">adjective</p>
+      <p class="definition">Someone may be described as reticent if they are feeling or showing reluctance, that is, hesitation or unwillingness to do something. Reticent can also describe someone who is reserved, inclined to be silent or uncommunicative about things.</p>
+      <p class="did-you-know">Use of reticent to mean “reluctant” is well established. The word comes from the Latin reticēre, meaning “to keep silent.”</p>
+      <a class="source" href="https://www.merriam-webster.com/word-of-the-day/reticent-2026-10-30" target="_blank" rel="noopener">Merriam-Webster →</a>
+    </div>
   </main>
   <footer>Sunlit Streaks · October 2026 – September 2027</footer>
 
@@ -110,7 +111,7 @@
       const el = document.getElementById('content');
       try {
         const res = await fetch('./data/word-of-day.json?t=' + Date.now());
-        if (!res.ok) throw new Error('Failed to load word');
+        if (!res.ok) return;
         const data = await res.json();
 
         const word = data.word || 'Unknown';
@@ -120,7 +121,6 @@
         const dyk = data.did_you_know ? escapeHtml(data.did_you_know) : '';
         const link = data.link || data.source_url || '#';
 
-        el.className = 'card';
         el.innerHTML =
           '<h2 class="word">' + escapeHtml(word) + '</h2>' +
           '<p class="meta">' + pron + ' ' + pos + '</p>' +
@@ -128,8 +128,6 @@
           (dyk ? '<p class="did-you-know">' + dyk + '</p>' : '') +
           '<a class="source" href="' + escapeHtml(link) + '" target="_blank" rel="noopener">Merriam-Webster →</a>';
       } catch (err) {
-        el.className = 'error';
-        el.textContent = 'Could not load the word of the day. Pull to refresh or try again later.';
         console.error(err);
       }
     }
