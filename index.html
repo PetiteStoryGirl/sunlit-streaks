@@ -4,3 +4,150 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Sunlit Streaks</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#FF6B5B" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <style>
+    :root {
+      --bg: #FFFDF9;
+      --text: #2C2416;
+      --accent: #FF6B5B;
+      --muted: #8A7E6F;
+      --card: #FFFFFF;
+      --shadow: 0 4px 24px rgba(44, 36, 22, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 1.25rem 1.25rem 0.5rem;
+      text-align: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    header p {
+      margin: 0.25rem 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    main {
+      flex: 1;
+      padding: 1rem 1.25rem 2rem;
+      max-width: 520px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1rem;
+    }
+    .word {
+      font-size: 2.25rem;
+      font-weight: 800;
+      margin: 0 0 0.25rem;
+      letter-spacing: -0.02em;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin: 0 0 1rem;
+    }
+    .definition, .did-you-know {
+      line-height: 1.55;
+      margin: 0 0 0.75rem;
+    }
+    .did-you-know {
+      font-style: italic;
+      color: #4A4036;
+    }
+    a.source {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .loading, .error {
+      text-align: center;
+      color: var(--muted);
+      padding: 3rem 1rem;
+    }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Sunlit Streaks</h1>
+    <p>Word of the Day</p>
+  </header>
+  <main>
+    <div id="content" class="loading">Loading…</div>
+  </main>
+  <footer>Sunlit Streaks · October 2026 – September 2027</footer>
+
+  <script>
+    async function loadWord() {
+      const el = document.getElementById('content');
+      try {
+        const res = await fetch('./data/word-of-day.json?t=' + Date.now());
+        if (!res.ok) throw new Error('Failed to load word');
+        const data = await res.json();
+
+        const word = data.word || 'Unknown';
+        const pos = data.part_of_speech ? `<em>${escapeHtml(data.part_of_speech)}</em>` : '';
+        const pron = data.pronunciation ? escapeHtml(data.pronunciation) : '';
+        const def = escapeHtml(data.definition || '');
+        const dyk = data.did_you_know ? escapeHtml(data.did_you_know) : '';
+        const link = data.link || data.source_url || '#';
+
+        el.className = 'card';
+        el.innerHTML = `
+          <h2 class="word">${escapeHtml(word)}</h2>
+          <p class="meta">${pron} ${pos}</p>
+          <p class="definition">${def}</p>
+          ${dyk ? `<p class="did-you-know">${dyk}</p>` : ''}
+          <a class="source" href="${escapeHtml(link)}" target="_blank" rel="noopener">Merriam-Webster →</a>
+        `;
+      } catch (err) {
+        el.className = 'error';
+        el.textContent = 'Could not load the word of the day. Pull to refresh or try again later.';
+        console.error(err);
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&')
+        .replace(/</g, '<')
+        .replace(/>/g, '>')
+        .replace(/"/g, '"');
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+
+    loadWord();
+  </script>
+</body>
+</html>
