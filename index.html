@@ -17,6 +17,7 @@
       --muted: #8A7E6F;
       --card: #FFFFFF;
       --shadow: 0 4px 24px rgba(44, 36, 22, 0.08);
+      --nav-h: 64px;
     }
     * { box-sizing: border-box; }
     body {
@@ -27,6 +28,7 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      padding-bottom: var(--nav-h);
     }
     header {
       padding: 1.25rem 1.25rem 0.5rem;
@@ -45,11 +47,13 @@
     }
     main {
       flex: 1;
-      padding: 1rem 1.25rem 2rem;
+      padding: 1rem 1.25rem 1rem;
       max-width: 520px;
       margin: 0 auto;
       width: 100%;
     }
+    .tab { display: none; }
+    .tab.active { display: block; }
     .card {
       background: var(--card);
       border-radius: 16px;
@@ -82,9 +86,66 @@
       font-weight: 600;
       font-size: 0.9rem;
     }
+    .check-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid #f0ece6;
+      font-weight: 600;
+    }
+    .check-row input {
+      width: 22px;
+      height: 22px;
+      accent-color: var(--accent);
+    }
+    .streak-big {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin: 0;
+      line-height: 1;
+    }
+    .streak-label {
+      color: var(--muted);
+      margin: 0.25rem 0 0;
+    }
+    .goal {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #f0ece6;
+    }
+    .goal:last-child { border-bottom: none; }
+    .nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: var(--nav-h);
+      background: white;
+      border-top: 1px solid #f0ece6;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+    }
+    .nav button {
+      background: none;
+      border: none;
+      font-size: 0.85rem;
+      color: var(--muted);
+      padding: 0.5rem 1rem;
+      font-weight: 600;
+    }
+    .nav button.active {
+      color: var(--accent);
+    }
     footer {
       text-align: center;
-      padding: 1rem;
+      padding: 0.5rem 1rem 0.75rem;
       color: var(--muted);
       font-size: 0.8rem;
     }
@@ -93,27 +154,149 @@
 <body>
   <header>
     <h1>Sunlit Streaks</h1>
-    <p>Word of the Day</p>
+    <p id="header-sub">Word of the Day</p>
   </header>
+
   <main>
-    <div id="content" class="card">
-      <h2 class="word">reticent</h2>
-      <p class="meta">adjective</p>
-      <p class="definition">Someone may be described as reticent if they are feeling or showing reluctance, that is, hesitation or unwillingness to do something. Reticent can also describe someone who is reserved, inclined to be silent or uncommunicative about things.</p>
-      <p class="did-you-know">Use of reticent to mean “reluctant” is well established. The word comes from the Latin reticēre, meaning “to keep silent.”</p>
-      <a class="source" href="https://www.merriam-webster.com/word-of-the-day/reticent-2026-10-30" target="_blank" rel="noopener">Merriam-Webster →</a>
-    </div>
+    <!-- Word tab -->
+    <section id="tab-word" class="tab active">
+      <div class="card" id="word-card">
+        <h2 class="word">reticent</h2>
+        <p class="meta">adjective</p>
+        <p class="definition">Someone may be described as reticent if they are feeling or showing reluctance, that is, hesitation or unwillingness to do something. Reticent can also describe someone who is reserved, inclined to be silent or uncommunicative about things.</p>
+        <p class="did-you-know">Use of reticent to mean “reluctant” is well established. The word comes from the Latin reticēre, meaning “to keep silent.”</p>
+        <a class="source" href="https://www.merriam-webster.com/word-of-the-day/reticent-2026-10-30" target="_blank" rel="noopener">Merriam-Webster →</a>
+        <label class="check-row">
+          <input type="checkbox" id="used-today" />
+          Used this word in conversation today
+        </label>
+      </div>
+    </section>
+
+    <!-- Streaks tab -->
+    <section id="tab-streaks" class="tab">
+      <div class="card">
+        <p class="streak-big" id="word-streak">0</p>
+        <p class="streak-label">day word streak</p>
+      </div>
+      <div class="card">
+        <p style="margin:0 0 0.5rem; font-weight:600;">Other habits</p>
+        <div id="habits-list"></div>
+      </div>
+    </section>
+
+    <!-- Goals tab -->
+    <section id="tab-goals" class="tab">
+      <div class="card">
+        <p style="margin:0 0 0.75rem; font-weight:600;">Goals</p>
+        <div id="goals-list"></div>
+        <button id="add-goal" style="margin-top:1rem; background:var(--accent); color:white; border:none; border-radius:12px; padding:0.6rem 1rem; font-weight:600;">+ Add goal</button>
+      </div>
+    </section>
   </main>
+
   <footer>Sunlit Streaks · October 2026 – September 2027</footer>
 
+  <nav class="nav">
+    <button data-tab="word" class="active">Word</button>
+    <button data-tab="streaks">Streaks</button>
+    <button data-tab="goals">Goals</button>
+  </nav>
+
   <script>
+    const STORAGE_KEY = 'sunlit-streaks-v1';
+    let state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"wordUses":{},"habits":[{"name":"Morning pages","done":false},{"name":"Move body","done":false}],"goals":[{"text":"Use the word of the day","done":false}]}');
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function todayKey() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function calcStreak() {
+      const uses = state.wordUses || {};
+      let streak = 0;
+      let d = new Date();
+      for (let i = 0; i < 365; i++) {
+        const key = d.toISOString().slice(0, 10);
+        if (uses[key]) {
+          streak++;
+          d.setDate(d.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      return streak;
+    }
+
+    function renderWordCheckbox() {
+      const cb = document.getElementById('used-today');
+      const key = todayKey();
+      cb.checked = !!state.wordUses[key];
+      cb.onchange = () => {
+        if (cb.checked) state.wordUses[key] = true;
+        else delete state.wordUses[key];
+        save();
+        document.getElementById('word-streak').textContent = calcStreak();
+      };
+    }
+
+    function renderStreaks() {
+      document.getElementById('word-streak').textContent = calcStreak();
+      const list = document.getElementById('habits-list');
+      list.innerHTML = state.habits.map((h, i) =>
+        `<div class="goal"><span>${h.name}</span><input type="checkbox" ${h.done ? 'checked' : ''} data-habit="${i}"></div>`
+      ).join('');
+      list.querySelectorAll('input').forEach(cb => {
+        cb.onchange = () => {
+          state.habits[+cb.dataset.habit].done = cb.checked;
+          save();
+        };
+      });
+    }
+
+    function renderGoals() {
+      const list = document.getElementById('goals-list');
+      list.innerHTML = state.goals.map((g, i) =>
+        `<div class="goal"><span>${g.text}</span><input type="checkbox" ${g.done ? 'checked' : ''} data-goal="${i}"></div>`
+      ).join('');
+      list.querySelectorAll('input').forEach(cb => {
+        cb.onchange = () => {
+          state.goals[+cb.dataset.goal].done = cb.checked;
+          save();
+        };
+      });
+    }
+
+    document.getElementById('add-goal').onclick = () => {
+      const text = prompt('New goal');
+      if (text) {
+        state.goals.push({ text, done: false });
+        save();
+        renderGoals();
+      }
+    };
+
+    document.querySelectorAll('.nav button').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        document.getElementById('header-sub').textContent =
+          btn.dataset.tab === 'word' ? 'Word of the Day' :
+          btn.dataset.tab === 'streaks' ? 'Streaks' : 'Goals';
+      };
+    });
+
     async function loadWord() {
-      const el = document.getElementById('content');
       try {
         const res = await fetch('./data/word-of-day.json?t=' + Date.now());
         if (!res.ok) return;
         const data = await res.json();
-
+        const card = document.getElementById('word-card');
         const word = data.word || 'Unknown';
         const pos = data.part_of_speech ? '<em>' + escapeHtml(data.part_of_speech) + '</em>' : '';
         const pron = data.pronunciation ? escapeHtml(data.pronunciation) : '';
@@ -121,12 +304,15 @@
         const dyk = data.did_you_know ? escapeHtml(data.did_you_know) : '';
         const link = data.link || data.source_url || '#';
 
-        el.innerHTML =
+        card.innerHTML =
           '<h2 class="word">' + escapeHtml(word) + '</h2>' +
           '<p class="meta">' + pron + ' ' + pos + '</p>' +
           '<p class="definition">' + def + '</p>' +
           (dyk ? '<p class="did-you-know">' + dyk + '</p>' : '') +
-          '<a class="source" href="' + escapeHtml(link) + '" target="_blank" rel="noopener">Merriam-Webster →</a>';
+          '<a class="source" href="' + escapeHtml(link) + '" target="_blank" rel="noopener">Merriam-Webster →</a>' +
+          '<label class="check-row"><input type="checkbox" id="used-today" /> Used this word in conversation today</label>';
+
+        renderWordCheckbox();
       } catch (err) {
         console.error(err);
       }
@@ -144,6 +330,9 @@
       navigator.serviceWorker.register('./sw.js').catch(() => {});
     }
 
+    renderWordCheckbox();
+    renderStreaks();
+    renderGoals();
     loadWord();
   </script>
 </body>
