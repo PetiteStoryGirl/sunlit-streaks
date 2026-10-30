@@ -1,16 +1,7 @@
-const CACHE_NAME = 'sunlit-streaks-v3';
-const PRECACHE = [
-  './',
-  './index.html',
-  './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png'
-];
+const CACHE_NAME = 'sunlit-streaks-v4';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting())
-  );
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -23,15 +14,23 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+
+  // Always try the network first for HTML and JSON so updates show immediately
+  const url = new URL(event.request.url);
+  const isCritical = url.pathname.endsWith('/') ||
+                     url.pathname.endsWith('.html') ||
+                     url.pathname.endsWith('.json');
+
+  if (isCritical) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
-        if (!response || response.status !== 200 || response.type !== 'basic') return response;
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-        return response;
-      }).catch(() => cached);
+      return cached || fetch(event.request);
     })
   );
 });
